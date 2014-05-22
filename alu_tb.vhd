@@ -117,10 +117,11 @@ BEGIN
 		assert c = "1100001010010111" report "Invalid unsigned add" severity error;
 		
 		-- unsigned sub
+		code <= "1111";
 		a <= "0010011000100110";
 		b <= "1001110001110001";
 		wait for 1ps;
-		assert co = '0' report "Invalid carry for unsigned sub" severity error;
+		assert co = '1' report "Invalid carry for unsigned sub" severity error;
 		assert c = "1000100110110101" report "Invalid unsigned sub" severity error;
 		
       wait;
