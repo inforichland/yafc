@@ -23,6 +23,9 @@
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="alu_tb_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="alu_tb_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="alu_tb_isim_beh.wdb"/>
     <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="data_stack.cmd_log"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="data_stack.lso"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="data_stack.ngc"/>
@@ -33,9 +36,7 @@
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="data_stack.xst"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="data_stack_envsettings.html"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="data_stack_summary.html"/>
-    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="data_stack_tb_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="data_stack_tb_isim_beh.exe"/>
-    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="data_stack_tb_isim_beh.wdb"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="data_stack_tb_stx_beh.prj"/>
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="data_stack_xst.xrpt"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="dram.prj"/>
@@ -45,7 +46,6 @@
     <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
-    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
     <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="stack.cmd_log"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="stack.lso"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="stack.ngc"/>
@@ -71,13 +71,11 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1400694990" xil_pn:in_ck="-4550417506106834207" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1400694990">
+    <transform xil_pn:end_ts="1400727058" xil_pn:in_ck="-5742832087615528646" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1400727058">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="alu.vhd"/>
+      <outfile xil_pn:name="alu_tb.vhd"/>
       <outfile xil_pn:name="common.vhd"/>
       <outfile xil_pn:name="data_stack.vhd"/>
       <outfile xil_pn:name="data_stack_tb.vhd"/>
@@ -85,11 +83,11 @@
       <outfile xil_pn:name="stack.vhd"/>
       <outfile xil_pn:name="stack_tb.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1400694990" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="-6277338192381976742" xil_pn:start_ts="1400694990">
+    <transform xil_pn:end_ts="1400727021" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="2981265839048178253" xil_pn:start_ts="1400727021">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1400694990" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-7238763230283618344" xil_pn:start_ts="1400694990">
+    <transform xil_pn:end_ts="1400727021" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="8881255854359414987" xil_pn:start_ts="1400727021">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
@@ -97,14 +95,11 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1400694990" xil_pn:in_ck="-4550417506106834207" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1400694990">
+    <transform xil_pn:end_ts="1400727058" xil_pn:in_ck="-5742832087615528646" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1400727058">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="alu.vhd"/>
+      <outfile xil_pn:name="alu_tb.vhd"/>
       <outfile xil_pn:name="common.vhd"/>
       <outfile xil_pn:name="data_stack.vhd"/>
       <outfile xil_pn:name="data_stack_tb.vhd"/>
@@ -112,32 +107,20 @@
       <outfile xil_pn:name="stack.vhd"/>
       <outfile xil_pn:name="stack_tb.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1400694998" xil_pn:in_ck="-4550417506106834207" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="721405817930331668" xil_pn:start_ts="1400694990">
+    <transform xil_pn:end_ts="1400727070" xil_pn:in_ck="-5742832087615528646" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-8116062591912539590" xil_pn:start_ts="1400727058">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForProperties"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="data_stack_tb_beh.prj"/>
-      <outfile xil_pn:name="data_stack_tb_isim_beh.exe"/>
+      <outfile xil_pn:name="alu_tb_beh.prj"/>
+      <outfile xil_pn:name="alu_tb_isim_beh.exe"/>
       <outfile xil_pn:name="fuse.log"/>
       <outfile xil_pn:name="isim"/>
-      <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
     </transform>
-    <transform xil_pn:end_ts="1400695144" xil_pn:in_ck="6636999632829740818" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="4579256594650575832" xil_pn:start_ts="1400695143">
+    <transform xil_pn:end_ts="1400727071" xil_pn:in_ck="6303797397674237048" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-7859226817780529666" xil_pn:start_ts="1400727070">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForProperties"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
-      <outfile xil_pn:name="data_stack_tb_isim_beh.wdb"/>
+      <outfile xil_pn:name="alu_tb_isim_beh.wdb"/>
       <outfile xil_pn:name="isim.cmd"/>
-      <outfile xil_pn:name="isim.log"/>
     </transform>
     <transform xil_pn:end_ts="1400262946" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1400262946">
       <status xil_pn:value="SuccessfullyRun"/>
@@ -170,6 +153,11 @@
     <transform xil_pn:end_ts="1400721961" xil_pn:in_ck="7147637021021820210" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-7739454364561172199" xil_pn:start_ts="1400721926">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputAdded"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputRemoved"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
       <outfile xil_pn:name="data_stack.lso"/>
       <outfile xil_pn:name="data_stack.ngc"/>
@@ -178,7 +166,6 @@
       <outfile xil_pn:name="data_stack.stx"/>
       <outfile xil_pn:name="data_stack.syr"/>
       <outfile xil_pn:name="data_stack.xst"/>
-      <outfile xil_pn:name="data_stack_tb_beh.prj"/>
       <outfile xil_pn:name="data_stack_tb_stx_beh.prj"/>
       <outfile xil_pn:name="data_stack_xst.xrpt"/>
       <outfile xil_pn:name="stack.ngr"/>
