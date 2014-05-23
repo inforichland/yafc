@@ -60,6 +60,7 @@ begin
 	
 	process( is_lit, is_jmp, is_cjmp, is_call, is_alu, insn, N1, N2, N3, R )
 	begin
+		-- default values for control signals
 		dpush 	<= '0';
 		dpop 		<= '0';
 		dtos_sel	<= "00";
@@ -75,14 +76,14 @@ begin
 		alu_a		<= ( others => '0' );
 		alu_b		<= ( others => '0' );
 	
-		if is_lit then
+		if is_lit then		-- 15-bit literal zero-extended to 16 bits
 			dtos_in <= '0' & insn( 14 downto 0 );
 			dtos_sel <= "11";
 			dnos_sel <= "01";
 			dpush <= '1';
-		elsif is_jmp then
+		elsif is_jmp then		-- 13-bit address
 			-- TODO: control signal to load new PC
-		elsif is_cjmp then
+		elsif is_cjmp then	-- "0branch" (conditional jump - jump if N1 is 0)
 			-- TODO: check status value and maybe load new PC
 		elsif is_call then
 			-- TODO: push current PC onto stack, load new PC
