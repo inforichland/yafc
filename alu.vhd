@@ -86,39 +86,39 @@ begin
 			-- relational
 			when alu_lt =>														-- <
 				rel := as < bs;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_gt =>														-- >
 				rel := as > bs;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_lte =>														-- <=
 				rel := as <= bs;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_gte =>														-- >=
 				rel := as >= bs;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_eq =>														-- =
 				rel := a = b;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_ult =>														-- U<
 				rel := au < bu;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_ugt =>														-- U>
 				rel := au > bu;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_ulte =>														-- U<=
 				rel := au <= bu;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when alu_ugte =>														-- U>=
 				rel := au >= bu;
-				if rel then	c <= c_true; else	c <= c_false end if;
+				if rel then	c <= c_true; else	c <= c_false; end if;
 			
 			when others => c <= ( others => '0' );							-- logical zero
 		end case;

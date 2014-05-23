@@ -44,7 +44,7 @@ entity control is
 		-- ALU signals
 		alu_op	: out	std_logic_vector( 4 downto 0 );
 		alu_a		: out	word;
-		alu_b		: out	word;
+		alu_b		: out	word
 	);
 end control;
 
@@ -88,16 +88,36 @@ begin
 			-- TODO: push current PC onto stack, load new PC
 		elsif is_alu then
 			alu_op <= insn( 12 downto 8 );
+			alu_a <= N2;		-- next on stack
+			alu_b <= N1;		-- top of stack
 			if insn( 7 ) = '1' then
-				-- copy R to PC
+				null; -- copy R to PC		(return from subroutine)
 			end if;
 			if insn( 6 ) = '1' then
-				
-			
+				null; -- copy N1 to R		(>R)
+			end if;
+			if insn( 5 ) = '1' then
+				null; -- RAM read     n1 -> [n1] (data in ram at address n1 replaces the top of the stack
+			end if;
+			if insn( 4 ) = '1' then
+				null; -- RAM write     n2 -> [n1] (data in N2 stored into address in N1)
+			end if;
+			if insn( 3 ) = '1' then
+				null; -- I/O read			n1 -> [n1] (data in I/O space at address n1 replaces the top of the stack)
+			end if;
+			if insn( 2 ) = '1' then
+				null;	-- I/O write		n2 -> [n1] (data in n2 placed at address n1 in I/O space)
+			end if;
+			if insn( 1 ) = '1' then
+				null;
+			end if;
+			if insn( 0 ) = '1' then
+				null;
+			end if;
 		else	 -- NOP
 			null;
 		end if;
-		
+	end process;
 		
 
 end Behavioral;
