@@ -45,7 +45,9 @@ begin
 			if rst_n = '0' then
 				tos_i <= ( others => '0' );
 			else
-				tos_i <= next_tos;
+				if tos_ce = '1' then
+					tos_i <= next_tos;
+				end if;
 			end if;
 		end if;
 	end process regs_proc;
@@ -65,16 +67,25 @@ begin
 	-- the only input to the stack is the TOS register
 	stack_din <= tos_i;
 	
+	-- clock is enabled to TOS register when push is '1'
+	tos_ce <= push;
+	
 	-- combinational logic
 	comb_proc : process( tos_i, tos_in, tos_sel, stack_dout )
 	begin
-		-- TOS select
-		case tos_sel is
-			when "01" => next_tos <= tos_in;
-			when "10" => next_tos <= stack_dout;
-			when others => next_tos <= tos_i;
-		end case;
+		-- defaults
+		tos_ce <= '0';
+		next_tos <= tos_i;
+		
+		if push = '1' then
+			tos_ce <= '1';
+			
+			if tos_sel = '0' then
+				next_tos <= tos_in;
+			else
+				next_tos <= stack_dout;
+			end if;
+		end if;
 	end process comb_proc;
 
 end Behavioral;
-

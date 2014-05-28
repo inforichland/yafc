@@ -17,6 +17,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
 
 use work.opcodes.all;
+use work.common.all;
 
 entity alu is
 	port( 
@@ -71,7 +72,7 @@ begin
 				cs := ( not as ) + 1;
 				c <= std_logic_vector( cs( 15 downto 0 ) );
 			when alu_srs =>	c <= a( 15 ) & a( 15 downto 1 );			-- arithmetic right shift
-			when alu_lrs =>	c <= a( 14 downto 0 ) & '0';				-- arithmetic left shift			
+			when alu_sls =>	c <= a( 14 downto 0 ) & '0';				-- arithmetic left shift			
 			
 			-- unsigned arithmetic
 			when alu_uadd =>														-- addition
