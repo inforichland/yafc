@@ -20,3 +20,6 @@
 *.xmsgs
 *.ini
 *.ngr
+iseconfig/
+isim/
+xst/

@@ -33,6 +33,7 @@ architecture Behavioral of return_stack is
 	signal tos_i, next_tos : word := ( others => '0' );
 	signal stack_dout : word := ( others => '0' );
 	signal stack_din  : word := ( others => '0' );
+	signal tos_ce : std_logic := '0';
 begin
 
 	-- assign outputs
@@ -71,7 +72,7 @@ begin
 	tos_ce <= push;
 	
 	-- combinational logic
-	comb_proc : process( tos_i, tos_in, tos_sel, stack_dout )
+	comb_proc : process( tos_i, tos_in, tos_sel, stack_dout, push )
 	begin
 		-- defaults
 		tos_ce <= '0';

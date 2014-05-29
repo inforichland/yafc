@@ -21,14 +21,13 @@ package common is
 	
 	COMPONENT control
 	PORT(
-		clk : IN std_logic;
-		rst_n : IN std_logic;
 		insn : IN std_logic_vector(15 downto 0);
 		N1 : IN std_logic_vector(15 downto 0);
 		N2 : IN std_logic_vector(15 downto 0);
-		N3 : IN std_logic_vector(15 downto 0);
 		R : IN std_logic_vector(15 downto 0);
-		insn_in : IN std_logic_vector(15 downto 0);
+		pc_en		: out	std_logic;
+		pc_ld		: out	std_logic;
+		pc_next	: out	addr;
 		mem_rd : IN std_logic_vector(15 downto 0);
 		io_rd : IN std_logic_vector(15 downto 0);          
 		dpush : OUT std_logic;
@@ -45,7 +44,7 @@ package common is
 		alu_op : OUT std_logic_vector(4 downto 0);
 		alu_a : OUT std_logic_vector(15 downto 0);
 		alu_b : OUT std_logic_vector(15 downto 0);
-		pc_out : OUT std_logic_vector(12 downto 0);
+		alu_in : IN std_logic_vector(15 downto 0);
 		mem_wr : OUT std_logic_vector(15 downto 0);
 		mem_sel : OUT std_logic;
 		mem_addr : OUT std_logic_vector(12 downto 0);
@@ -83,6 +82,25 @@ package common is
 		addr_rd : IN std_logic_vector(4 downto 0);
 		din : IN std_logic_vector(15 downto 0);          
 		dout : OUT std_logic_vector(15 downto 0)
+		);
+	END COMPONENT;
+	
+	COMPONENT prog_mem
+	PORT(
+		clk : IN std_logic;
+		addr : IN std_logic_vector(12 downto 0);          
+		data : OUT std_logic_vector(15 downto 0)
+		);
+	END COMPONENT;
+	
+	COMPONENT ram
+	PORT(
+		CLK : IN std_logic;
+		WE : IN std_logic;
+		EN : IN std_logic;
+		ADDR : IN std_logic_vector(12 downto 0);
+		DI : IN std_logic_vector(15 downto 0);          
+		DO : OUT std_logic_vector(15 downto 0)
 		);
 	END COMPONENT;
 	
