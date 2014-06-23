@@ -205,7 +205,7 @@ begin
           --when "1101" =>	-- nop
           
           
-        when f_put =>	-- put (must be followed by a NOP)
+        when f_put =>	-- put
           mem_addr		<= insn( 9 downto 0 );
           mem_write	<= tos;
           mem_we		<= '1';
