@@ -21,9 +21,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-Library UNISIM;
-use UNISIM.vcomponents.all;
-
 use work.common.all;
 
 entity stack is
@@ -79,17 +76,25 @@ begin
 	empty	<= regs.empty;
 
 	-- instantiate the RAM for our stack
-	Inst_dram: dram 
-		GENERIC MAP(
-			depth 	=> 32
-		)			
-		PORT MAP(
-			clk 		=> clk,
-			we			=> we,
-			addr_wr 	=> addr_wr_slv,
-			addr_rd	=> addr_rd_slv,
-			din 		=> din,
-			dout 		=> dout
+	Inst_dpram : entity work.dpram( rtl )
+		generic map( 
+            g_data_width => 16,
+            g_addr_width => 5,
+            g_init => false,
+            g_init_file => ""
+		)
+		port map (
+			clk => clk,
+			-- write port
+			addr_a => addr_wr_slv,
+			q_a => open,
+			data_a => din,
+			we_a => we,
+			-- read port
+			addr_b => addr_rd_slv,
+			q_b => dout,
+			data_b => ( others => '0' ),
+			we_b => '0'
 		);
 
 	-- process to create registers

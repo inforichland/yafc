@@ -2,134 +2,51 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
 package common is
-	constant c_word_width : integer := 16;
-	constant c_word_msb   : integer := c_word_width - 1;
-	constant c_stack_size : integer := 32;
+  constant c_word_width : integer := 16;
+  constant c_word_msb   : integer := c_word_width - 1;
+  constant c_stack_size : integer := 32;
 
-	subtype word is std_logic_vector( c_word_msb downto 0 );
-	subtype addr is std_logic_vector( 12 downto 0 );
-	
-	COMPONENT alu
-	PORT(
-		code : IN std_logic_vector(4 downto 0);
-		a : IN std_logic_vector(15 downto 0);
-		b : IN std_logic_vector(15 downto 0);          
-		c : OUT std_logic_vector(15 downto 0);
-		co : OUT std_logic
-		);
-	END COMPONENT;
-	
-	COMPONENT control
-	PORT(
-		insn : IN std_logic_vector(15 downto 0);
-		N1 : IN std_logic_vector(15 downto 0);
-		N2 : IN std_logic_vector(15 downto 0);
-		R : IN std_logic_vector(15 downto 0);
-		pc_en		: out	std_logic;
-		pc_ld		: out	std_logic;
-		pc_next	: out	addr;
-		mem_rd : IN std_logic_vector(15 downto 0);
-		io_rd : IN std_logic_vector(15 downto 0);          
-		dpush : OUT std_logic;
-		dpop : OUT std_logic;
-		dtos_sel : OUT std_logic_vector(1 downto 0);
-		dtos_in : OUT std_logic_vector(15 downto 0);
-		dnos_sel : OUT std_logic_vector(1 downto 0);
-		dnos_in : OUT std_logic_vector(15 downto 0);
-		dstk_sel : OUT std_logic;
-		rpush : OUT std_logic;
-		rpop : OUT std_logic;
-		rtos_in : OUT std_logic_vector(15 downto 0);
-		rtos_sel : OUT std_logic;
-		alu_op : OUT std_logic_vector(4 downto 0);
-		alu_a : OUT std_logic_vector(15 downto 0);
-		alu_b : OUT std_logic_vector(15 downto 0);
-		alu_in : IN std_logic_vector(15 downto 0);
-		mem_wr : OUT std_logic_vector(15 downto 0);
-		mem_sel : OUT std_logic;
-		mem_addr : OUT std_logic_vector(12 downto 0);
-		io_wr : OUT std_logic_vector(15 downto 0);
-		io_sel : OUT std_logic;
-		io_addr : OUT std_logic_vector(12 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT data_stack
-	PORT(
-		clk : IN std_logic;
-		rst_n : IN std_logic;
-		push : IN std_logic;
-		pop : IN std_logic;
-		tos_sel : IN std_logic_vector(1 downto 0);
-		tos_in : IN std_logic_vector(15 downto 0);
-		nos_sel : IN std_logic_vector(1 downto 0);
-		nos_in : IN std_logic_vector(15 downto 0);
-		stk_sel : IN std_logic;          
-		tos : OUT std_logic_vector(15 downto 0);
-		nos : OUT std_logic_vector(15 downto 0);
-		ros : OUT std_logic_vector(15 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT dram
-	GENERIC(
-		depth : integer
-		);
-	PORT(
-		clk : IN std_logic;
-		we : IN std_logic;
-		addr_wr : IN std_logic_vector(4 downto 0);
-		addr_rd : IN std_logic_vector(4 downto 0);
-		din : IN std_logic_vector(15 downto 0);          
-		dout : OUT std_logic_vector(15 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT prog_mem
-	PORT(
-		clk : IN std_logic;
-		addr : IN std_logic_vector(12 downto 0);          
-		data : OUT std_logic_vector(15 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT ram
-	PORT(
-		CLK : IN std_logic;
-		WE : IN std_logic;
-		EN : IN std_logic;
-		ADDR : IN std_logic_vector(12 downto 0);
-		DI : IN std_logic_vector(15 downto 0);          
-		DO : OUT std_logic_vector(15 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT return_stack
-	PORT(
-		clk : IN std_logic;
-		rst_n : IN std_logic;
-		push : IN std_logic;
-		pop : IN std_logic;
-		tos_in : IN std_logic_vector(15 downto 0);
-		tos_sel : IN std_logic;          
-		tos : OUT std_logic_vector(15 downto 0)
-		);
-	END COMPONENT;
-	
-	COMPONENT stack
-	PORT(
-		clk : IN std_logic;
-		rst_n : IN std_logic;
-		push : IN std_logic;
-		pop : IN std_logic;
-		din : IN std_logic_vector(15 downto 0);          
-		dout : OUT std_logic_vector(15 downto 0);
-		full : OUT std_logic;
-		empty : OUT std_logic
-		);
-	END COMPONENT;
-	
+  subtype word is std_logic_vector( c_word_msb downto 0 );
+  subtype addr is std_logic_vector( 12 downto 0 );
+  
+  function or_vector( s : std_logic_vector ) return std_logic;
+  function log2( n : natural ) return natural;
+
+  -- ALU operations
+  type alu_results_t is record
+    add_result : word;
+    sub_result : word;
+    sll_result : word;
+    srl_result : word;
+  end record;
+
+  -- processor state
+  type state_t is ( st_execute, st_stall );
+
 end common;
 
---package body common is
---end common;
+package body common is
+
+  function or_vector( s : std_logic_vector ) return std_logic is
+    variable res : std_logic := '0';
+  begin
+    for i in s'range loop
+      res := res or s( i );
+    end loop;
+    return res;
+  end function or_vector;
+
+  function log2( n : natural ) return natural is
+    variable a : natural := n;
+    variable log : natural := 0;
+  begin
+    for i in n downto 0 loop
+      if a > 0 then
+        log := log + 1;
+      end if;
+      a := a / 2;
+    end loop;
+    return log;
+  end function log2;
+
+end common;

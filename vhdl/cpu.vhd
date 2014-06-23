@@ -1,187 +1,163 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    14:47:30 05/26/2014 
--- Design Name: 
--- Module Name:    cpu - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.common.all;
 
-entity cpu is
-	port (
-		clk				: in	std_logic;
-		rst_n				: in	std_logic;
-		out0				: out word;
-		out1				: out	word
-	);
-end cpu;
+entity yafc is
+    port 
+    (
+        clk         : in std_logic;
+        rst_n       : in std_logic;
+        o_out       : out word;
+        o_strobe    : out std_logic;
+        o_debug_1   : out word;
+        o_debug_2   : out word
+    );
 
-architecture structural of cpu is
-	-- data stack signals
-	signal dpush : std_logic ;
-	signal dpop : std_logic ;
-	signal dtos_sel : std_logic_vector( 1 downto 0 ) ;
-	signal dtos_in : word ;
-	signal dnos_sel : std_logic_vector( 1 downto 0 ) ;
-	signal dnos_in : word ;
-	signal dstk_sel : std_logic ;
-	signal dtos : word ;
-	signal dnos : word ;
-	--signal dros : word ;
-	-- return stack signals
-	signal rpush : std_logic;
-	signal rpop : std_logic;
-	signal rtos_in : word;
-	signal rtos_sel : std_logic;
-	signal rtos	: word;
-	-- ALU signals
-	signal alu_op : std_logic_vector( 4 downto 0 );
-	signal alu_a : word;
-	signal alu_b : word;
-	signal alu_c : word;
-	signal alu_carryout : std_logic;
-	-- program memory
-	signal insn : word;
-	signal pc_out : addr;
+end entity;
+
+architecture structural of yafc is
+	-- machine state data type
+	signal state, next_state : state_t := st_execute;
+
+    -- program counter signals
+	signal pc_inc, pc_load : std_logic := '0';
+	signal pc : std_logic_vector( 9 downto 0 ) := "0000000000";
+	signal pc_next : std_logic_vector( 9 downto 0 );
+	signal insn : std_logic_vector( 15 downto 0 ) := ( others => '0' );
+    
 	-- RAM signals
-	signal mem_sel : std_logic := '0';
-	signal mem_addr : addr;
-	signal mem_wr, mem_rd : word;
-	-- I/O signals
-	signal io_wr : word;
-	-- PC signals
-	signal pc_en, pc_ld : std_logic := '0';
-	signal pc, pc_next : addr := ( others => '0' );
+	signal mem_addr : std_logic_vector( 9 downto 0 ) := ( others => '0' );
+	signal mem_write, mem_read : std_logic_vector( 15 downto 0 ) := ( others => '0' );
+	signal mem_we, mem_re : std_logic := '0';
+
+	-- stack signals
+	signal push, pop : std_logic := '0';
+	signal tos_sel, nos_sel : std_logic_vector( 1 downto 0 ) := "00";
+	signal tos_in, nos_in : word := ( others => '0' );
+	signal stk_sel : std_logic := '0';
+	signal tos, nos : word := ( others => '0' );
+
+	-- logic of ALU
+	signal alu_results : alu_results_t := ( others => ( others => '0') );
 begin
 
-	-- assign outputs
-	out0 <= mem_wr;
-	out1 <= io_wr;
+	o_debug_1 <= tos;
+	o_debug_2 <= nos;
 
-	-- Program Counter
-	process( clk ) 
+	-- "ALU" ;-)
+	alu_proc : process( tos, nos )
+		variable not_shiftable : std_logic;
 	begin
-		if rising_edge( clk ) then
-			if rst_n = '0' then 
-				pc <= ( others => '0' );
-			elsif pc_en = '1' then
-				if pc_ld = '1' then
-					pc <= pc_next;
-				else 
-					pc <= std_logic_vector( unsigned( pc ) + 1 );
-				end if;
-			end if;
+			
+		not_shiftable := or_vector( tos( 15 downto 4 ) );
+
+		alu_results.add_result <= std_logic_vector( signed( nos ) + signed( tos ) );
+		alu_results.sub_result <= std_logic_vector( signed( nos ) - signed( tos ) );
+
+		if not_shiftable = '1' then
+			alu_results.sll_result <= ( others => '0' );
+			alu_results.srl_result <= ( others => '0' );
+		else
+			alu_results.sll_result <= std_logic_vector( shift_left( signed( nos ), to_integer( signed( tos ) ) ) );
+			alu_results.srl_result <= std_logic_vector( shift_right( signed( nos ), to_integer( signed( tos ) ) ) );
 		end if;
-	end process; 
+    end process alu_proc;
 
-	-- program memory ROM
-	Inst_prog_mem: prog_mem PORT MAP(
-		clk => clk,
-		--en => '1',
-		addr => pc,
-		data => insn
-	);
-	
-	-- working memory (RAM)
-	Inst_ram: ram PORT MAP(
-		CLK => clk,
-		WE => mem_sel,
-		EN => '1',
-		ADDR => mem_addr,
-		DI => mem_wr,
-		DO => mem_rd
-	);
+	-- state register
+	state_proc : process( clk, rst_n )
+	begin
+		if rst_n = '0' then
+			state <= st_execute;
+		elsif rising_edge( clk ) then
+			state <= next_state;
+		end if;
+	end process state_proc;
 
-	-- Arithmetic/Logic Unit
-	Inst_alu: alu PORT MAP(
-		code	=> alu_op,
-		a 		=> alu_a,
-		b 		=> alu_b,
-		c 		=> alu_c,
-		co 	=> open --alu_carryout
-	);
-
-	-- main controller / instruction decoder
-	Inst_control: control PORT MAP(
-		-- program counter
-		insn 			=> insn,
-		pc_en			=> pc_en,
-		pc_ld			=> pc_ld,
+	-- main controller
+	controller : entity work.control( Behavioral )
+	port map (
+		clk			=> clk,
+		rst_n			=> rst_n,
+		-- input to controller
+		alu_results	=> alu_results,
+		tos			=> tos,
+		mem_read		=> mem_read,
+		insn			=> insn,
+		state			=> state,
+		-- output control signals
+		push			=> push,
+		pop			=> pop,
+		tos_sel		=> tos_sel,
+		nos_sel		=> nos_sel,
+		tos_in		=> tos_in,
+		nos_in		=> nos_in,
+		stk_sel		=> stk_sel,
+		pc_inc		=> pc_inc,
+		pc_load		=> pc_load,
 		pc_next		=> pc_next,
-		-- data stack
-		N1 			=> dtos,
-		N2 			=> dnos,
-		R 				=> rtos,
-		dpush 		=> dpush,
-		dpop 			=> dpop,
-		dtos_sel 	=> dtos_sel,
-		dtos_in 		=> dtos_in,
-		dnos_sel 	=> dnos_sel,
-		dnos_in 		=> dnos_in,
-		dstk_sel 	=> dstk_sel,
-		-- return stack
-		rpush 		=> rpush,
-		rpop 			=> rpop,
-		rtos_in 		=> rtos_in,
-		rtos_sel 	=> rtos_sel,
-		-- ALU
-		alu_op 		=> alu_op,
-		alu_a 		=> alu_a,
-		alu_b 		=> alu_b,
-		alu_in		=> alu_c,
-		-- RAM
-		mem_rd 		=> mem_rd,
-		mem_wr 		=> mem_wr,
-		mem_sel 		=> mem_sel,
-		mem_addr 	=> mem_addr,
-		-- I/O space
-		io_rd 		=> ( others => '0' ),
-		io_wr 		=> io_wr,
-		io_sel 		=> open,
-		io_addr 		=> open
+		o_strobe		=> o_strobe,
+		o_out			=> o_out,
+		mem_addr		=> mem_addr,
+		mem_write	=> mem_write,
+		mem_we		=> mem_we,
+		next_state	=> next_state
 	);
 
-	-- Data stack
-	Inst_data_stack: data_stack PORT MAP(
-		clk 		=> clk,
-		rst_n 	=> rst_n,
-		push 		=> dpush,
-		pop 		=> dpop,
-		tos_sel 	=> dtos_sel,
-		tos_in 	=> dtos_in,
-		nos_sel 	=> dnos_sel,
-		nos_in 	=> dnos_in,
-		stk_sel 	=> dstk_sel,
-		tos 		=> dtos,
-		nos 		=> dnos,
-		ros 		=> open --dros
+	-- program counter
+	prog_cntr : entity work.up_counter( rtl )
+	generic map (
+		WIDTH => 10,
+		RESET_VALUE => "0000000000"
+	)
+	port map (
+		clk     => clk,
+		rst_n   => rst_n,
+		inc     => pc_inc,
+		load    => pc_load,
+		d       => pc_next,
+		q       => pc
 	);
-
-	-- Return stack
-	Inst_return_stack: return_stack PORT MAP(
-		clk 		=> clk,
-		rst_n 	=> rst_n,
-		push 		=> rpush,
-		pop 		=> rpop,
-		tos_in 	=> rtos_in,
-		tos_sel 	=> rtos_sel,
-		tos 		=> rtos
+    
+    -- Dual-Port RAM
+    --  contains instructions and working memory
+	ram : entity work.dpram( rtl )
+	generic map (
+		g_data_width  => 16,
+		g_addr_width  => 10,
+		g_init        => true,
+		g_init_file   => "C:\Users\Tim\Documents\Source\yafc\examples\loop.init"
+	)
+	port map (
+		clk     => clk,
+		-- instruction port
+		data_a  => ( others => '0' ),
+		addr_a  => pc,
+		we_a    => '0',
+		q_a     => insn,
+		-- working memory
+		addr_b  => mem_addr,
+		data_b  => mem_write,
+		we_b    => mem_we,
+		q_b     => mem_read
 	);
-
+    
+    -- the stack
+	data : entity work.data_stack( Behavioral )
+	port map(
+		clk     => clk,
+		rst_n   => rst_n,
+		push    => push,
+		pop     => pop,
+		tos_sel => tos_sel,
+		tos_in  => tos_in,
+		nos_sel => nos_sel,
+		nos_in  => nos_in,
+		stk_sel => stk_sel,
+		tos     => tos,
+		nos     => nos,
+		ros     => open
+	);
+    
 end structural;

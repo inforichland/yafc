@@ -25,8 +25,8 @@ use work.common.all;
 entity data_stack is
 	port ( 
 		clk		: in	std_logic;
-		rst_n		: in	std_logic;
-		push		: in	std_logic;
+		rst_n	: in	std_logic;
+		push	: in	std_logic;
 		pop		: in	std_logic;
 		tos_sel	: in	std_logic_vector( 1 downto 0 );
 		tos_in	: in	word;
@@ -53,7 +53,7 @@ architecture Behavioral of data_stack is
 	-- Constants --
 	---------------
 	constant c_regs_reset : regs_t := ( tos => ( others => '0' ),
-													nos => ( others => '0' ) );
+										nos => ( others => '0' ) );
 	
 	-------------
 	-- Signals --
@@ -70,9 +70,10 @@ begin
 	ros <= stack_dout;
 
 	-- the formal stack itself
-	Inst_stack: stack PORT MAP(
+	Inst_stack : entity work.stack( Behavioral ) 
+    PORT MAP(
 		clk 	=> clk,
-		rst_n => rst_n,
+		rst_n   => rst_n,
 		push 	=> push,
 		pop 	=> pop,
 		din 	=> stack_din,
@@ -82,14 +83,12 @@ begin
 	);
 	
 	-- create registers
-	regs_proc : process( clk )
+	regs_proc : process( clk, rst_n )
 	begin
-		if rising_edge( clk ) then
-			if rst_n = '0' then
-				regs <= c_regs_reset;
-			else
-				regs <= next_regs;
-			end if;
+        if rst_n = '0' then
+            regs <= c_regs_reset;
+		elsif rising_edge( clk ) then
+            regs <= next_regs;
 		end if;
 	end process regs_proc;
 
