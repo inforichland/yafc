@@ -54,7 +54,8 @@ begin
 	end process regs_proc;
 	
 	-- the formal stack itself
-	Inst_stack: stack PORT MAP(
+	Inst_stack: entity work.stack( Behavioral ) 
+    PORT MAP(
 		clk 	=> clk,
 		rst_n => rst_n,
 		push 	=> push,
@@ -67,10 +68,7 @@ begin
 	
 	-- the only input to the stack is the TOS register
 	stack_din <= tos_i;
-	
-	-- clock is enabled to TOS register when push is '1'
-	tos_ce <= push;
-	
+		
 	-- combinational logic
 	comb_proc : process( tos_i, tos_in, tos_sel, stack_dout, push )
 	begin

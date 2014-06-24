@@ -8,7 +8,7 @@ entity yafc is
     port 
     (
         clk         : in std_logic;
-        rst_n       : in std_logic;
+        rst_in      : in std_logic;
         o_out       : out word;
         o_strobe    : out std_logic;
         o_debug_1   : out word;
@@ -32,36 +32,54 @@ architecture structural of yafc is
 	signal mem_write, mem_read : std_logic_vector( 15 downto 0 ) := ( others => '0' );
 	signal mem_we, mem_re : std_logic := '0';
 
-	-- stack signals
-	signal push, pop : std_logic := '0';
-	signal tos_sel, nos_sel : std_logic_vector( 1 downto 0 ) := "00";
-	signal tos_in, nos_in : word := ( others => '0' );
-	signal stk_sel : std_logic := '0';
-	signal tos, nos : word := ( others => '0' );
+	-- data stack signals
+	signal dpush, dpop : std_logic := '0';
+	signal dtos_sel, dnos_sel : std_logic_vector( 1 downto 0 ) := "00";
+	signal dtos_in, dnos_in : word := ( others => '0' );
+	signal dstk_sel : std_logic := '0';
+	signal dtos, dnos : word := ( others => '0' );
+
+	-- return stack
+	signal rpush, rpop : std_logic := '0';
+	signal rtos_sel : std_logic := '0';
+	signal rtos_in : word := ( others => '0' );
+	signal rtos : word := ( others => '0' );
 
 	-- logic of ALU
 	signal alu_results : alu_results_t := ( others => ( others => '0') );
+	
+	-- Reset
+	signal rst_n : std_logic := '0';
 begin
 
-	o_debug_1 <= tos;
-	o_debug_2 <= nos;
+	-- debug outputs
+	o_debug_1 <= dtos;
+	o_debug_2 <= dnos;
+
+	-- async assert, sync deassert
+	reset_conditioner : entity work.reset( Behavioral )
+	port map (
+		clk => clk,
+		rst_i => rst_in,
+		rst_o => rst_n
+	);
 
 	-- "ALU" ;-)
-	alu_proc : process( tos, nos )
+	alu_proc : process( dtos, dnos )
 		variable not_shiftable : std_logic;
 	begin
 			
-		not_shiftable := or_vector( tos( 15 downto 4 ) );
+		not_shiftable := or_vector( dtos( 15 downto 4 ) );
 
-		alu_results.add_result <= std_logic_vector( signed( nos ) + signed( tos ) );
-		alu_results.sub_result <= std_logic_vector( signed( nos ) - signed( tos ) );
+		alu_results.add_result <= std_logic_vector( signed( dnos ) + signed( dtos ) );
+		alu_results.sub_result <= std_logic_vector( signed( dnos ) - signed( dtos ) );
 
 		if not_shiftable = '1' then
 			alu_results.sll_result <= ( others => '0' );
 			alu_results.srl_result <= ( others => '0' );
 		else
-			alu_results.sll_result <= std_logic_vector( shift_left( signed( nos ), to_integer( signed( tos ) ) ) );
-			alu_results.srl_result <= std_logic_vector( shift_right( signed( nos ), to_integer( signed( tos ) ) ) );
+			alu_results.sll_result <= std_logic_vector( shift_left( signed( dnos ), to_integer( signed( dtos ) ) ) );
+			alu_results.srl_result <= std_logic_vector( shift_right( signed( dnos ), to_integer( signed( dtos ) ) ) );
 		end if;
     end process alu_proc;
 
@@ -82,18 +100,23 @@ begin
 		rst_n			=> rst_n,
 		-- input to controller
 		alu_results	=> alu_results,
-		tos			=> tos,
+		dtos			=> dtos,
+		rtos			=> rtos,
 		mem_read		=> mem_read,
 		insn			=> insn,
 		state			=> state,
 		-- output control signals
-		push			=> push,
-		pop			=> pop,
-		tos_sel		=> tos_sel,
-		nos_sel		=> nos_sel,
-		tos_in		=> tos_in,
-		nos_in		=> nos_in,
-		stk_sel		=> stk_sel,
+		dpush			=> dpush,
+		dpop			=> dpop,
+		dtos_sel		=> dtos_sel,
+		dnos_sel		=> dnos_sel,
+		dtos_in		=> dtos_in,
+		dnos_in		=> dnos_in,
+		dstk_sel		=> dstk_sel,
+		rpush			=> rpush,
+		rpop			=> rpop,
+		rtos_sel		=> rtos_sel,
+		rtos_in		=> rtos_in,
 		pc_inc		=> pc_inc,
 		pc_load		=> pc_load,
 		pc_next		=> pc_next,
@@ -144,20 +167,32 @@ begin
 	);
     
     -- the stack
-	data : entity work.data_stack( Behavioral )
+	dstack : entity work.data_stack( Behavioral )
 	port map(
 		clk     => clk,
 		rst_n   => rst_n,
-		push    => push,
-		pop     => pop,
-		tos_sel => tos_sel,
-		tos_in  => tos_in,
-		nos_sel => nos_sel,
-		nos_in  => nos_in,
-		stk_sel => stk_sel,
-		tos     => tos,
-		nos     => nos,
+		push    => dpush,
+		pop     => dpop,
+		tos_sel => dtos_sel,
+		tos_in  => dtos_in,
+		nos_sel => dnos_sel,
+		nos_in  => dnos_in,
+		stk_sel => dstk_sel,
+		tos     => dtos,
+		nos     => dnos,
 		ros     => open
+	);
+	
+	rstack : entity work.return_stack( Behavioral )
+	port map(
+		clk 		=> clk,
+		rst_n		=> rst_n,
+		push		=> rpush,
+		pop		=> rpop,
+		tos_sel	=> rtos_sel,
+		tos_in	=> rtos_in,
+		tos		=> rtos
 	);
     
 end structural;
+

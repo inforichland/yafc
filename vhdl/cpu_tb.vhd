@@ -32,7 +32,7 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: entity work.yafc( structural ) PORT MAP (
       clk => clk,
-      rst_n => rst_n,
+      rst_in => rst_n,
       o_out => o_out,
       o_strobe => o_strobe,
       o_debug_1 => tos,
