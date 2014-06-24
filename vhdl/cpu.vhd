@@ -18,10 +18,7 @@ entity yafc is
 end entity;
 
 architecture structural of yafc is
-	-- machine state data type
-	signal state, next_state : state_t := st_execute;
-
-    -- program counter signals
+	-- program counter signals
 	signal pc_inc, pc_load : std_logic := '0';
 	signal pc : std_logic_vector( 9 downto 0 ) := "0000000000";
 	signal pc_next : std_logic_vector( 9 downto 0 );
@@ -51,6 +48,16 @@ architecture structural of yafc is
 	-- Reset
 	signal rst_n : std_logic := '0';
 begin
+
+	----------------------------------------------------------------------
+	-- TODO:
+	--  - Add more instructions (rot, nrot, swap, etc.)
+	--  - Switch to Harvard arch
+	--  - Add I/O (peripheral) bus
+	--  - Add interrupts
+	--  - Make assembler better
+	--  - Implement Forth! :-)
+	----------------------------------------------------------------------
 
 	-- debug outputs
 	o_debug_1 <= dtos;
@@ -83,16 +90,6 @@ begin
 		end if;
     end process alu_proc;
 
-	-- state register
-	state_proc : process( clk, rst_n )
-	begin
-		if rst_n = '0' then
-			state <= st_execute;
-		elsif rising_edge( clk ) then
-			state <= next_state;
-		end if;
-	end process state_proc;
-
 	-- main controller
 	controller : entity work.control( Behavioral )
 	port map (
@@ -104,7 +101,6 @@ begin
 		rtos			=> rtos,
 		mem_read		=> mem_read,
 		insn			=> insn,
-		state			=> state,
 		-- output control signals
 		dpush			=> dpush,
 		dpop			=> dpop,
@@ -124,8 +120,7 @@ begin
 		o_out			=> o_out,
 		mem_addr		=> mem_addr,
 		mem_write	=> mem_write,
-		mem_we		=> mem_we,
-		next_state	=> next_state
+		mem_we		=> mem_we
 	);
 
 	-- program counter
@@ -150,7 +145,7 @@ begin
 		g_data_width  => 16,
 		g_addr_width  => 10,
 		g_init        => true,
-		g_init_file   => "C:\Users\Tim\Documents\Source\yafc\examples\loop.init"
+		g_init_file   => "C:\Users\twawrzy\Documents\vhdl\yafc\examples\loop.init"
 	)
 	port map (
 		clk     => clk,

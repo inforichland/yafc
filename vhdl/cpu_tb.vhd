@@ -46,7 +46,10 @@ BEGIN
     begin
         wait until o_strobe'event;
         if o_strobe = '1' then
+				write( l, string'( "o_out: " ) );
             write( l, o_out );
+				write( l, string'( ",  " ) );
+				write( l, integer'image( to_integer( unsigned( o_out ) ) ) );
             writeline( output, l );
         end if;
     end process;

@@ -68,34 +68,24 @@ architecture Behavioral of stack is
 	
 	-- combinational
 	signal we : std_logic := '0';
-		
+	signal stack_dout : word := ( others => '0' );
 begin
 
 	-- assign outputs
 	full	<= regs.full;
 	empty	<= regs.empty;
+	dout	<= stack_dout;
 
-	-- instantiate the RAM for our stack
-	Inst_dpram : entity work.dpram( rtl )
-		generic map( 
-            g_data_width => 16,
-            g_addr_width => 5,
-            g_init => false,
-            g_init_file => ""
-		)
-		port map (
-			clk => clk,
-			-- write port
-			addr_a => addr_wr_slv,
-			q_a => open,
-			data_a => din,
-			we_a => we,
-			-- read port
-			addr_b => addr_rd_slv,
-			q_b => dout,
-			data_b => ( others => '0' ),
-			we_b => '0'
-		);
+	-- instantiate the (asynchonous) RAM for our stack
+	inst_ram : entity work.dpram_async( rtl )
+	port map (
+		clk	=> clk,
+		we		=> we,
+		waddr	=> addr_wr_slv,
+		raddr	=> addr_rd_slv,
+		din	=> din,
+		dout	=> stack_dout
+	);
 
 	-- process to create registers
 	regs_proc : process( clk )

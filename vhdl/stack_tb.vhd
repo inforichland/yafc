@@ -28,6 +28,9 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
+
+use std.textio.all;
 
 use work.common.all;
  
@@ -91,6 +94,7 @@ BEGIN
 
    -- Stimulus process
    stim_proc: process
+		variable l : line;
    begin		
       -- hold reset state for 100 ns.
 		rst_n <= '0';
@@ -138,11 +142,14 @@ BEGIN
 			din <= std_logic_vector( to_unsigned( i, c_word_width ) );
 			wait for clk_period;
 			push <= '0';
-			if i = 0 then
-				assert dout = "0000000000000000" report "Invalid dout in push loop (1)" severity error;
-			else
-				assert dout = std_logic_vector( to_unsigned( i, c_word_width ) ) report "Invalid dout in push loop" severity error;
-			end if;
+			
+			write( l, string'( "push loop  " ) );
+			write( l, integer'image( i ) );
+			write( l, string'( "   " ) );
+			write( l, dout );
+			writeline( output, l );
+			
+			assert dout = std_logic_vector( to_unsigned( i, c_word_width ) ) report "Invalid dout in push loop" severity error;
 		end loop;
 		
 		-- postcondition
@@ -156,6 +163,13 @@ BEGIN
 			pop <= '1';
 			wait for clk_period;
 			pop <= '0';
+			
+			write( l, string'( "pop loop  " ) );
+			write( l, integer'image( i ) );
+			write( l, string'( "   " ) );
+			write( l, dout );
+			writeline( output, l );
+			
 			assert dout <= std_logic_vector( to_unsigned( i, c_word_width ) ) report "Invalid dout in pop loop" severity error;
 		end loop;
 		

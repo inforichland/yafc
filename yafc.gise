@@ -22,6 +22,11 @@
   <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="yafc.xise"/>
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="_ngo"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/map.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/par.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/trce.xmsgs"/>
     <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
     <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="alu.cmd_log"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="alu.lso"/>
@@ -76,7 +81,6 @@
     <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
-    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
     <file xil_pn:fileType="FILE_VHDL_INSTTEMPLATE" xil_pn:name="prog_mem.vhi"/>
     <file xil_pn:fileType="FILE_VHDL_INSTTEMPLATE" xil_pn:name="ram.vhi"/>
     <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="return_stack.prj"/>
@@ -100,20 +104,44 @@
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="stack_xst.xrpt"/>
     <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xlnx_auto_0_xdb"/>
     <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGDBUILD_LOG" xil_pn:name="yafc.bld"/>
     <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="yafc.cmd_log"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="yafc.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NCD" xil_pn:name="yafc.ncd" xil_pn:subbranch="Par"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="yafc.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGD" xil_pn:name="yafc.ngd"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="yafc.ngr"/>
+    <file xil_pn:fileType="FILE_PAD_MISC" xil_pn:name="yafc.pad"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_PAR_REPORT" xil_pn:name="yafc.par" xil_pn:subbranch="Par"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_PCF" xil_pn:name="yafc.pcf" xil_pn:subbranch="Map"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc.prj"/>
+    <file xil_pn:fileType="FILE_TRCE_MISC" xil_pn:name="yafc.ptwx"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="yafc.stx"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="yafc.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_TIMING_TXT_REPORT" xil_pn:name="yafc.twr" xil_pn:subbranch="Par"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_TIMING_XML_REPORT" xil_pn:name="yafc.twx" xil_pn:subbranch="Par"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_UNROUTES" xil_pn:name="yafc.unroutes" xil_pn:subbranch="Par"/>
+    <file xil_pn:fileType="FILE_XPI" xil_pn:name="yafc.xpi"/>
     <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="yafc.xst"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="yafc_envsettings.html"/>
+    <file xil_pn:fileType="FILE_NCD" xil_pn:name="yafc_guide.ncd" xil_pn:origination="imported"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_MAP_REPORT" xil_pn:name="yafc_map.map" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_MAP_REPORT" xil_pn:name="yafc_map.mrp" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NCD" xil_pn:name="yafc_map.ncd" xil_pn:subbranch="Map"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGM" xil_pn:name="yafc_map.ngm" xil_pn:subbranch="Map"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="yafc_map.xrpt"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="yafc_ngdbuild.xrpt"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_PAD_EXCEL_REPORT" xil_pn:name="yafc_pad.csv" xil_pn:subbranch="Par"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_PAD_TXT_REPORT" xil_pn:name="yafc_pad.txt" xil_pn:subbranch="Par"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="yafc_par.xrpt"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="yafc_summary.html"/>
-    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc_tb_beh.prj"/>
+    <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="yafc_summary.xml"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc_tb_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="yafc_tb_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="yafc_tb_isim_beh.wdb"/>
+    <file xil_pn:fileType="FILE_WEBTALK" xil_pn:name="yafc_usage.xml"/>
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="yafc_xst.xrpt"/>
   </files>
 
@@ -122,13 +150,9 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403579589" xil_pn:in_ck="-4159634674056651741" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1403579589">
+    <transform xil_pn:end_ts="1403633609" xil_pn:in_ck="-2531375255738508287" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1403633609">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="reset.vhd"/>
       <outfile xil_pn:name="vhdl/common.vhd"/>
       <outfile xil_pn:name="vhdl/control.vhd"/>
@@ -137,6 +161,7 @@
       <outfile xil_pn:name="vhdl/data_stack.vhd"/>
       <outfile xil_pn:name="vhdl/data_stack_tb.vhd"/>
       <outfile xil_pn:name="vhdl/dpram.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram_async.vhd"/>
       <outfile xil_pn:name="vhdl/opcodes.vhd"/>
       <outfile xil_pn:name="vhdl/return_stack.vhd"/>
       <outfile xil_pn:name="vhdl/return_stack_tb.vhd"/>
@@ -144,11 +169,11 @@
       <outfile xil_pn:name="vhdl/stack_tb.vhd"/>
       <outfile xil_pn:name="vhdl/up_counter.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1403491017" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="4539637675162688126" xil_pn:start_ts="1403491017">
+    <transform xil_pn:end_ts="1403630961" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="4539637675162688126" xil_pn:start_ts="1403630961">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403491017" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-6659082073514710276" xil_pn:start_ts="1403491017">
+    <transform xil_pn:end_ts="1403630961" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-6659082073514710276" xil_pn:start_ts="1403630961">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
@@ -156,14 +181,9 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403579589" xil_pn:in_ck="-4159634674056651741" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1403579589">
+    <transform xil_pn:end_ts="1403633609" xil_pn:in_ck="-2531375255738508287" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1403633609">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="reset.vhd"/>
       <outfile xil_pn:name="vhdl/common.vhd"/>
       <outfile xil_pn:name="vhdl/control.vhd"/>
@@ -172,6 +192,7 @@
       <outfile xil_pn:name="vhdl/data_stack.vhd"/>
       <outfile xil_pn:name="vhdl/data_stack_tb.vhd"/>
       <outfile xil_pn:name="vhdl/dpram.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram_async.vhd"/>
       <outfile xil_pn:name="vhdl/opcodes.vhd"/>
       <outfile xil_pn:name="vhdl/return_stack.vhd"/>
       <outfile xil_pn:name="vhdl/return_stack_tb.vhd"/>
@@ -179,64 +200,60 @@
       <outfile xil_pn:name="vhdl/stack_tb.vhd"/>
       <outfile xil_pn:name="vhdl/up_counter.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1403579605" xil_pn:in_ck="-4159634674056651741" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-3457904627901917396" xil_pn:start_ts="1403579589">
+    <transform xil_pn:end_ts="1403633617" xil_pn:in_ck="-2531375255738508287" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-3457904627901917396" xil_pn:start_ts="1403633609">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForProperties"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="fuse.log"/>
       <outfile xil_pn:name="isim"/>
       <outfile xil_pn:name="xilinxsim.ini"/>
       <outfile xil_pn:name="yafc_tb_beh.prj"/>
       <outfile xil_pn:name="yafc_tb_isim_beh.exe"/>
     </transform>
-    <transform xil_pn:end_ts="1403579652" xil_pn:in_ck="-875842907350066265" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-186443182730400976" xil_pn:start_ts="1403579651">
+    <transform xil_pn:end_ts="1403633618" xil_pn:in_ck="6299679871930035898" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-186443182730400976" xil_pn:start_ts="1403633617">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForProperties"/>
-      <status xil_pn:value="OutOfDateForPredecessor"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="OutputChanged"/>
       <outfile xil_pn:name="isim.cmd"/>
-      <outfile xil_pn:name="isim.log"/>
       <outfile xil_pn:name="yafc_tb_isim_beh.wdb"/>
     </transform>
-    <transform xil_pn:end_ts="1401395583" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1401395583">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="-2979539024852774816" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="-2979539024852774816" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="5973281754098171920" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="5973281754098171920" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="-3459588279196623646" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="-3459588279196623646" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="250970745955965653" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="250970745955965653" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580903" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="-2344906559060678566" xil_pn:start_ts="1403580903">
+    <transform xil_pn:end_ts="1403626246" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="-2344906559060678566" xil_pn:start_ts="1403626246">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1403580990" xil_pn:in_ck="-8462346481398228903" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="7648575325358541417" xil_pn:start_ts="1403580969">
+    <transform xil_pn:end_ts="1403631371" xil_pn:in_ck="2581357187226678007" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-9117595325848036098" xil_pn:start_ts="1403631326">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="OutputChanged"/>
+      <status xil_pn:value="OutputRemoved"/>
       <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
+      <outfile xil_pn:name="cpu.ngr"/>
+      <outfile xil_pn:name="data_stack.ngr"/>
       <outfile xil_pn:name="webtalk_pn.xml"/>
       <outfile xil_pn:name="xst"/>
       <outfile xil_pn:name="yafc.lso"/>
@@ -246,8 +263,59 @@
       <outfile xil_pn:name="yafc.stx"/>
       <outfile xil_pn:name="yafc.syr"/>
       <outfile xil_pn:name="yafc.xst"/>
-      <outfile xil_pn:name="yafc_tb_beh.prj"/>
       <outfile xil_pn:name="yafc_xst.xrpt"/>
+    </transform>
+    <transform xil_pn:end_ts="1403626289" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="-8258674033488104745" xil_pn:start_ts="1403626289">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1403632533" xil_pn:in_ck="-5762076626243505556" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="-1908641340081363429" xil_pn:start_ts="1403632520">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <outfile xil_pn:name="_ngo"/>
+      <outfile xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
+      <outfile xil_pn:name="yafc.bld"/>
+      <outfile xil_pn:name="yafc.ngd"/>
+      <outfile xil_pn:name="yafc_ngdbuild.xrpt"/>
+    </transform>
+    <transform xil_pn:end_ts="1403632570" xil_pn:in_ck="5286214985866" xil_pn:name="TRANEXT_map_spartan6" xil_pn:prop_ck="6093601622908603872" xil_pn:start_ts="1403632533">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <outfile xil_pn:name="_xmsgs/map.xmsgs"/>
+      <outfile xil_pn:name="yafc.pcf"/>
+      <outfile xil_pn:name="yafc_map.map"/>
+      <outfile xil_pn:name="yafc_map.mrp"/>
+      <outfile xil_pn:name="yafc_map.ncd"/>
+      <outfile xil_pn:name="yafc_map.ngm"/>
+      <outfile xil_pn:name="yafc_map.xrpt"/>
+      <outfile xil_pn:name="yafc_summary.xml"/>
+      <outfile xil_pn:name="yafc_usage.xml"/>
+    </transform>
+    <transform xil_pn:end_ts="1403632595" xil_pn:in_ck="6269035449046625443" xil_pn:name="TRANEXT_par_spartan6" xil_pn:prop_ck="93661965788626211" xil_pn:start_ts="1403632570">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="WarningsGenerated"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <outfile xil_pn:name="_xmsgs/par.xmsgs"/>
+      <outfile xil_pn:name="yafc.ncd"/>
+      <outfile xil_pn:name="yafc.pad"/>
+      <outfile xil_pn:name="yafc.par"/>
+      <outfile xil_pn:name="yafc.ptwx"/>
+      <outfile xil_pn:name="yafc.unroutes"/>
+      <outfile xil_pn:name="yafc.xpi"/>
+      <outfile xil_pn:name="yafc_pad.csv"/>
+      <outfile xil_pn:name="yafc_pad.txt"/>
+      <outfile xil_pn:name="yafc_par.xrpt"/>
+    </transform>
+    <transform xil_pn:end_ts="1403632595" xil_pn:in_ck="5286214985734" xil_pn:name="TRAN_postRouteTrce" xil_pn:prop_ck="445577401284416185" xil_pn:start_ts="1403632584">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <outfile xil_pn:name="_xmsgs/trce.xmsgs"/>
+      <outfile xil_pn:name="yafc.twr"/>
+      <outfile xil_pn:name="yafc.twx"/>
     </transform>
   </transforms>
 
