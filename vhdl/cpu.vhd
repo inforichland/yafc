@@ -52,6 +52,7 @@ begin
 	----------------------------------------------------------------------
 	-- TODO:
 	--  - Add more instructions (rot, nrot, swap, etc.)
+	--  - Add call / ret instructions
 	--  - Switch to Harvard arch
 	--  - Add I/O (peripheral) bus
 	--  - Add interrupts

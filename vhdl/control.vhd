@@ -105,6 +105,13 @@ begin
 
   -- instruction decoding
   decode : process( insn, alu_results, dtos, rtos, mem_read, state, fcode_stalled )
+	 procedure pop_dstack is
+	 begin
+      dtos_sel <= "01";
+	   dnos_sel <= "10";
+	   dpop <= '1';
+	 end procedure pop_dstack;
+	 
     variable fcode : fcode;
   begin
     -- default values
@@ -198,9 +205,7 @@ begin
                next_state   <= st_stall;
              end if;
              
-             dtos_sel  <= "01";
-             dnos_sel  <= "10";
-             dpop       <= '1';
+             pop_dstack;
              
            when f_dup =>  -- dup
              dtos_sel    <= "00";
@@ -221,9 +226,7 @@ begin
                next_state   <= st_stall;
              end if;
              
-             dtos_sel    <= "01";
-             dnos_sel    <= "10";
-             dpop       <= '1';
+             pop_dstack;
              
            when f_lds =>   -- load to stack
              mem_addr   <= insn( 9 downto 0 );
@@ -242,16 +245,12 @@ begin
              mem_write   <= dtos;
              mem_we      <= '1';
              
-             dtos_sel <= "01";
-             dnos_sel <= "10";
-             dpop          <= '1';
+             pop_dstack;
              pc_inc      <= '0';
              next_state <= st_stall;
              
            when f_pop =>   -- drop
-             dtos_sel <= "01";
-             dnos_sel <= "10";
-             dpop <= '1';
+             pop_dstack;
            
            when f_rtd =>    -- <R
              rtos_sel   <= '1';
@@ -261,6 +260,39 @@ begin
              dnos_sel    <= "01";
              dpush       <= '1';   
            
+			  when f_rot =>	-- rot ( a b c -- b c a )
+				 dtos_sel <= "10";
+				 dnos_sel <= "01";
+				 dpush <= '1';
+				 dpop <= '1';
+			
+			  when f_nrt =>	-- -rot ( a b c -- c b a )
+ 			    dtos_sel <= "01";
+ 				 dnos_sel <= "10";
+				 dstk_sel <= '1';
+				 dpush <= '1';
+				 dpop <= '1';
+			
+			  when f_swp =>	-- swap
+			    dtos_sel <= "01";
+				 dnos_sel <= "01";
+			  
+			  when f_nip =>	-- nip	( a b c -- a c )
+			    dtos_sel <= "00";
+				 dnos_sel <= "10";
+				 dpop <= '1';
+				 
+			  when f_tck => 	-- tuck	( a b -- b a b )
+				 dtos_sel <= "00";
+				 dnos_sel <= "00";
+				 dstk_sel <= '1';
+				 dpush <= '1';
+				 
+			  when f_ovr =>	-- over	( a b -- a b a )
+			    dtos_sel <= "01";
+				 dnos_sel <= "01";
+				 dpush <= '1';
+			  
            when others =>  -- NOP
              null;
              

@@ -19,6 +19,12 @@ package opcodes is
 	constant f_dtr : fcode := "01101";       -- >R
 	constant f_pop : fcode := "01110";       -- drop
    constant f_rtd : fcode := "01111";       -- <R
+	constant f_rot : fcode := "10000";		  -- rot
+	constant f_nrt : fcode := "10001";		  -- -rot (nrot)\
+	constant f_swp : fcode := "10010";		  -- swap
+	constant f_nip : fcode := "10011";		  -- nip
+	constant f_tck : fcode := "10100";		  -- tuck
+	constant f_ovr : fcode := "10101";		  -- over
 
 end opcodes;
 
