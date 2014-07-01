@@ -51,7 +51,6 @@ begin
 
 	----------------------------------------------------------------------
 	-- TODO:
-	--  - Add more instructions (rot, nrot, swap, etc.)
 	--  - Add call / ret instructions
 	--  - Switch to Harvard arch
 	--  - Add I/O (peripheral) bus
@@ -72,57 +71,50 @@ begin
 		rst_o => rst_n
 	);
 
-	-- "ALU" ;-)
-	alu_proc : process( dtos, dnos )
-		variable not_shiftable : std_logic;
-	begin
-			
-		not_shiftable := or_vector( dtos( 15 downto 4 ) );
-
-		alu_results.add_result <= std_logic_vector( signed( dnos ) + signed( dtos ) );
-		alu_results.sub_result <= std_logic_vector( signed( dnos ) - signed( dtos ) );
-
-		if not_shiftable = '1' then
-			alu_results.sll_result <= ( others => '0' );
-			alu_results.srl_result <= ( others => '0' );
-		else
-			alu_results.sll_result <= std_logic_vector( shift_left( signed( dnos ), to_integer( signed( dtos ) ) ) );
-			alu_results.srl_result <= std_logic_vector( shift_right( signed( dnos ), to_integer( signed( dtos ) ) ) );
-		end if;
-    end process alu_proc;
-
 	-- main controller
 	controller : entity work.control( Behavioral )
 	port map (
 		clk			=> clk,
 		rst_n			=> rst_n,
 		-- input to controller
-		alu_results	=> alu_results,
-		dtos			=> dtos,
-		rtos			=> rtos,
-		mem_read		=> mem_read,
-		insn			=> insn,
-		-- output control signals
+		alu_results	=> alu_results,     -- ALU
+		dtos			=> dtos,        -- Data Top-of-Stack
+		rtos			=> rtos,        -- Return Top-of-Stack
+		mem_read		=> mem_read,    -- memory read bus
+		insn			=> insn,        -- instruction
+		-- data stack
 		dpush			=> dpush,
 		dpop			=> dpop,
 		dtos_sel		=> dtos_sel,
 		dnos_sel		=> dnos_sel,
-		dtos_in		=> dtos_in,
-		dnos_in		=> dnos_in,
+		dtos_in		    => dtos_in,
+		dnos_in		    => dnos_in,
 		dstk_sel		=> dstk_sel,
-		rpush			=> rpush,
+		-- return stack
+        rpush			=> rpush,
 		rpop			=> rpop,
 		rtos_sel		=> rtos_sel,
-		rtos_in		=> rtos_in,
-		pc_inc		=> pc_inc,
-		pc_load		=> pc_load,
-		pc_next		=> pc_next,
-		o_strobe		=> o_strobe,
+		rtos_in		    => rtos_in,
+		-- PC
+        pc_inc		    => pc_inc,
+		pc_load		    => pc_load,
+		pc_next		    => pc_next,
+		-- I/O bus
+        o_strobe		=> o_strobe,
 		o_out			=> o_out,
-		mem_addr		=> mem_addr,
-		mem_write	=> mem_write,
-		mem_we		=> mem_we
+		-- Memory bus
+        mem_addr		=> mem_addr,
+		mem_write	    => mem_write,
+		mem_we		    => mem_we
 	);
+    
+    -- ALU
+    inst_alu : entity work.alu( Behavioral )
+    port map (
+        tos     => dtos,
+        nos     => dnos,
+        results => alu_results
+    );
 
 	-- program counter
 	prog_cntr : entity work.up_counter( rtl )
@@ -146,7 +138,7 @@ begin
 		g_data_width  => 16,
 		g_addr_width  => 10,
 		g_init        => true,
-		g_init_file   => "C:\Users\twawrzy\Documents\vhdl\yafc\examples\loop.init"
+		g_init_file   => "..\examples\loop.init"
 	)
 	port map (
 		clk     => clk,
@@ -179,6 +171,7 @@ begin
 		ros     => open
 	);
 	
+    -- Return stack
 	rstack : entity work.return_stack( Behavioral )
 	port map(
 		clk 		=> clk,
@@ -191,4 +184,3 @@ begin
 	);
     
 end structural;
-
