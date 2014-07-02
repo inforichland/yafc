@@ -31,6 +31,7 @@ entity control is
     -- input control
     alu_results   : in    alu_results_t;
     dtos          : in   word;
+    dnos          : in  word;
     rtos          : in    word;
     mem_read      : in   word;
     insn          : in   word;
@@ -52,12 +53,12 @@ entity control is
     -- program counter
     pc_inc     : out std_logic;
     pc_load    : out std_logic;
-    pc_next    : out std_logic_vector( 9 downto 0 );
+    pc_next    : out address;
     -- output port
     o_strobe   : out   std_logic;
     o_out      : out   word;
     -- RAM
-    mem_addr   : out   std_logic_vector( 9 downto 0 );
+    mem_addr   : out address;
     mem_write  : out word;
     mem_we     : out std_logic
     );
@@ -106,13 +107,14 @@ begin
   -- instruction decoding
   decode : process( insn, alu_results, dtos, rtos, mem_read, state, fcode_stalled )
     procedure pop_dstack is
-  begin
-    dtos_sel <= "01";
-    dnos_sel <= "10";
-    dpop <= '1';
-  end procedure pop_dstack;
-  
-  variable fcode : fcode;
+    begin
+      dtos_sel <= "01";
+      dnos_sel <= "10";
+      dpop <= '1';
+    end procedure pop_dstack;
+
+    variable mcode : mcode;
+    variable fcode : fcode;
   begin
     -- default values
     dpush        <= '0'; 
@@ -136,167 +138,183 @@ begin
     mem_we      <= '0';
     next_state  <= st_execute;
     
-    -- grab the instruction code
-    fcode := insn( 14 downto 10 );
+    -- grab the major code and function code
+    mcode := insn( 14 downto 13 );
+    fcode := insn( 12 downto 8 );
+    
+    -- jump
+    -- 0branch
+    -- 1branch
+    -- fetch
+    -- store
     
     case state  is
-      -- have to use instruction register in this state
+      -- stalling to let a few operations complete
       when st_stall =>
         next_state <= st_execute; -- right now, there is only ever one cycle to stall 
       
-        if fcode_stalled = f_lds then -- load
-          dtos_in    <= mem_read;
-          dtos_sel    <= "11";
-          dnos_sel    <= "01";
-          dpush       <= '1';
-        end if;
+        case( fcode_stalled ) is
+          when f_lds =>
+            dtos_in    <= mem_read;
+            dtos_sel    <= "11";
+            dnos_sel    <= "01";
+            dpush       <= '1';
+
+          when f_put =>
+            pop_dstack;
+        
+          when others =>
+            null;
+        
+        end case;
         
       when st_execute =>
         
         -- decode the instruction
         if insn( insn'high ) = '1' then -- literal
-          dtos_in <= insn( 14 ) & insn( 14 downto 0 ); -- sign-extend the 15-bit literal to 16 bits
+          dtos_in <= insn( insn'high-1 ) & insn( insn'high-1 downto 0 ); -- sign-extend the literal by 1 bit
           dtos_sel <= "11";
           dnos_sel <= "01";
           dpush <= '1';
-        else    
-          case fcode is
-            when f_add =>   -- add
-              dtos_in    <= alu_results.add_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-              
-            when f_sub =>   -- subtract
-              dtos_in    <= alu_results.sub_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-              
-            when f_out =>   -- output TOS (non-destructively)
-              o_out_i      <= dtos;
-              o_strobe_i    <= '1';
-              
-            when f_jmp =>   -- unconditional jump
+        else
+          -- which major code is this instruction?
+          case mcode is
+            
+            when m_jump =>  -- unconditional jump
               pc_load    <= '1';
-              pc_next    <= insn( 9 downto 0 );
-              next_state   <= st_stall;
-              
-            when f_sla =>   -- arithmetic left shift
-              dtos_in    <= alu_results.sll_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-              
-            when f_sra =>   -- arithmetic right shift
-              dtos_in    <= alu_results.srl_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-              
-            when f_0br =>   -- conditional jump (0branch)
+              pc_next    <= insn( 12 downto 0 );
+            
+            when m_0bra =>  -- conditional jump (0branch)
               if dtos = "0000000000000000" then
                 pc_load    <= '1';
-                pc_next    <= insn( 9 downto 0 );
-                
-                pc_inc <= '0';
-                next_state   <= st_stall;
+                pc_next    <= insn( 12 downto 0 );
               end if;
-              
               pop_dstack;
-              
-            when f_dup =>  -- dup
-              dtos_sel    <= "00";
-              dnos_sel    <= "01";
-              dstk_sel    <= '0';
-              dpush       <= '1';
-              
-            when f_not =>  -- not
-              dtos_sel    <= "11";
-              dtos_in    <= not dtos;
-              
-            when f_1br =>  -- conditional jump (1branch) (branch if TOS not 0)
+            
+            when m_1bra =>  -- conditional jump (1branch)
               if dtos /= "0000000000000000" then
                 pc_load    <= '1';
-                pc_next    <= insn( 9 downto 0 );
-                
-                pc_inc   <= '0';
-                next_state   <= st_stall;
+                pc_next    <= insn( 12 downto 0 );
               end if;
-              
               pop_dstack;
-              
-            when f_lds =>   -- load to stack
-              mem_addr   <= insn( 9 downto 0 );
-              pc_inc       <= '0';
-              next_state <= st_stall;
-              
-            when f_dtr =>   -- >R
-              rpush <= '1';
-              rtos_in <= dtos;
-              dtos_sel <= "01";
-              dnos_sel <= "10";
-              dpop <= '1'; 
-              
-            when f_put =>   -- put   
-              mem_addr      <= insn( 9 downto 0 );
-              mem_write   <= dtos;
-              mem_we      <= '1';
-              
-              pop_dstack;
-              pc_inc      <= '0';
-              next_state <= st_stall;
-              
-            when f_pop =>   -- drop
-              pop_dstack;
-              
-            when f_rtd =>    -- <R
-              rtos_sel   <= '1';
-              rpop       <= '1';
-              dtos_in    <= rtos;
-              dtos_sel    <= "11";
-              dnos_sel    <= "01";
-              dpush       <= '1';   
-              
-            when f_rot =>	-- rot ( a b c -- b c a )
-              dtos_sel <= "10";
-              dnos_sel <= "01";
-              dpush <= '1';
-              dpop <= '1';
-              
-            when f_nrt =>	-- -rot ( a b c -- c b a )
-              dtos_sel <= "01";
-              dnos_sel <= "10";
-              dstk_sel <= '1';
-              dpush <= '1';
-              dpop <= '1';
-              
-            when f_swp =>	-- swap
-              dtos_sel <= "01";
-              dnos_sel <= "01";
-              
-            when f_nip =>	-- nip	( a b c -- a c )
-              dtos_sel <= "00";
-              dnos_sel <= "10";
-              dpop <= '1';
-              
-            when f_tck => 	-- tuck	( a b -- b a b )
-              dtos_sel <= "00";
-              dnos_sel <= "00";
-              dstk_sel <= '1';
-              dpush <= '1';
-              
-            when f_ovr =>	-- over	( a b -- a b a )
-              dtos_sel <= "01";
-              dnos_sel <= "01";
-              dpush <= '1';
-              
-            when others =>  -- NOP
-              null;
-              
-          end case; --case(fcode)
-        end if; -- insn(insn'high)=0
-    end case; -- case(state)
+            
+            -- function
+            when m_func =>
+            
+              -- execute the function
+              case fcode is
+                when f_add =>   -- add
+                  dtos_in    <= alu_results.add_result;
+                  dtos_sel    <= "11";
+                  dnos_sel    <= "10";
+                  dpop       <= '1';
+                  
+                when f_sub =>   -- subtract
+                  dtos_in    <= alu_results.sub_result;
+                  dtos_sel    <= "11";
+                  dnos_sel    <= "10";
+                  dpop       <= '1';   
+                  
+                when f_out =>   -- output TOS (non-destructively)
+                  o_out_i      <= dtos;
+                  o_strobe_i    <= '1';
+                  
+                when f_sla =>   -- arithmetic left shift
+                  dtos_in    <= alu_results.sll_result;
+                  dtos_sel    <= "11";
+                  dnos_sel    <= "10";
+                  dpop       <= '1';
+                  
+                when f_sra =>   -- arithmetic right shift
+                  dtos_in    <= alu_results.srl_result;
+                  dtos_sel    <= "11";
+                  dnos_sel    <= "10";
+                  dpop       <= '1';
+                  
+                when f_dup =>  -- dup
+                  dtos_sel    <= "00";
+                  dnos_sel    <= "01";
+                  dstk_sel    <= '0';
+                  dpush       <= '1';
+                  
+                when f_not =>  -- not
+                  dtos_sel    <= "11";
+                  dtos_in    <= not dtos;
+                  
+                when f_lds =>   -- fetch   @
+                  --mem_addr    <= insn( 9 downto 0 );
+                  mem_addr    <= dtos( 12 downto 0 );
+                  pc_inc      <= '0';
+                  next_state  <= st_stall;
+                  
+                when f_dtr =>   -- >R   "to R"
+                  rpush     <= '1';
+                  rtos_in   <= dtos;
+                  dtos_sel  <= "01";
+                  dnos_sel  <= "10";
+                  dpop      <= '1'; 
+                  
+                when f_put =>   -- store   !
+                
+                  mem_addr  <= dtos( 9 downto 0 );
+                  mem_write <= dnos;
+                  mem_we    <= '1';
+                  
+                  pop_dstack;
+                  pc_inc      <= '0';
+                  next_state  <= st_stall;
+                  
+                when f_pop =>   -- drop
+                  pop_dstack;
+                  
+                when f_rtd =>    -- R>  "from R"
+                  rtos_sel  <= '1';
+                  rpop      <= '1';
+                  dtos_in   <= rtos;
+                  dtos_sel  <= "11";
+                  dnos_sel  <= "01";
+                  dpush     <= '1';   
+                  
+                when f_rot =>	-- rot ( a b c -- b c a )
+                  dtos_sel  <= "10";
+                  dnos_sel  <= "01";
+                  dpush     <= '1';
+                  dpop      <= '1';
+                  
+                when f_nrt =>	-- -rot ( a b c -- c b a )
+                  dtos_sel  <= "01";
+                  dnos_sel  <= "10";
+                  dstk_sel  <= '1';
+                  dpush     <= '1';
+                  dpop      <= '1';
+                  
+                when f_swp =>	-- swap ( a b -- b a )
+                  dtos_sel  <= "01";
+                  dnos_sel  <= "01";
+                  
+                when f_nip =>	-- nip	( a b c -- a c )
+                  dtos_sel  <= "00";
+                  dnos_sel  <= "10";
+                  dpop      <= '1';
+                  
+                when f_tck => 	-- tuck	( a b -- b a b )
+                  dtos_sel  <= "00";
+                  dnos_sel  <= "00";
+                  dstk_sel  <= '1';
+                  dpush     <= '1';
+                  
+                when f_ovr =>	-- over	( a b -- a b a )
+                  dtos_sel  <= "01";
+                  dnos_sel  <= "01";
+                  dpush     <= '1';
+                  
+                when others =>  -- NOP
+                  null;
+                  
+              end case; --case( fcode )
+          end case; -- case( mcode )
+        end if; -- insn( insn'high ) = 0
+    end case; -- case( state )
     
   end process decode;
 end Behavioral;

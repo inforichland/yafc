@@ -21,9 +21,10 @@ class Assembler( object ):
         self.labels = {}
         self.instr = 0
         self.words = {}
+        self.addr_width = 13
 
     def _addr2bin( self, addr ):
-        return bin(addr)[2:].zfill(10)
+        return bin(addr)[2:].zfill( self.addr_width )
 
     def code_append( self, c ):
         self.code.append( c )

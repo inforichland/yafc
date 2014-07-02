@@ -78,8 +78,6 @@
     <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="dram.stx"/>
     <file xil_pn:fileType="FILE_VHDL_INSTTEMPLATE" xil_pn:name="dram.vhi"/>
     <file xil_pn:fileType="FILE_XST" xil_pn:name="dram.xst"/>
-    <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
-    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
     <file xil_pn:fileType="FILE_VHDL_INSTTEMPLATE" xil_pn:name="prog_mem.vhi"/>
     <file xil_pn:fileType="FILE_VHDL_INSTTEMPLATE" xil_pn:name="ram.vhi"/>
@@ -138,7 +136,6 @@
     <file xil_pn:fileType="FILE_XRPT" xil_pn:name="yafc_par.xrpt"/>
     <file xil_pn:fileType="FILE_HTML" xil_pn:name="yafc_summary.html"/>
     <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="yafc_summary.xml"/>
-    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc_tb_beh.prj"/>
     <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="yafc_tb_isim_beh.exe"/>
     <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="yafc_tb_isim_beh.wdb"/>
     <file xil_pn:fileType="FILE_WEBTALK" xil_pn:name="yafc_usage.xml"/>
@@ -150,7 +147,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1404176172" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1404176172">
+    <transform xil_pn:end_ts="1404269382" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1404269382">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="vhdl/alu.vhd"/>
@@ -182,7 +179,7 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1404176172" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1404176172">
+    <transform xil_pn:end_ts="1404269382" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1404269382">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
       <outfile xil_pn:name="vhdl/alu.vhd"/>
@@ -202,18 +199,15 @@
       <outfile xil_pn:name="vhdl/stack_tb.vhd"/>
       <outfile xil_pn:name="vhdl/up_counter.vhd"/>
     </transform>
-    <transform xil_pn:end_ts="1404176185" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-3457904627901917396" xil_pn:start_ts="1404176172">
-      <status xil_pn:value="SuccessfullyRun"/>
+    <transform xil_pn:end_ts="1404269388" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-3457904627901917396" xil_pn:start_ts="1404269382">
+      <status xil_pn:value="FailedRun"/>
       <status xil_pn:value="ReadyToRun"/>
-      <outfile xil_pn:name="fuse.log"/>
-      <outfile xil_pn:name="isim"/>
-      <outfile xil_pn:name="xilinxsim.ini"/>
-      <outfile xil_pn:name="yafc_tb_beh.prj"/>
-      <outfile xil_pn:name="yafc_tb_isim_beh.exe"/>
     </transform>
-    <transform xil_pn:end_ts="1404176186" xil_pn:in_ck="-875842907350066265" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-186443182730400976" xil_pn:start_ts="1404176185">
-      <status xil_pn:value="SuccessfullyRun"/>
+    <transform xil_pn:end_ts="1404180520" xil_pn:in_ck="-875842907350066265" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-186443182730400976" xil_pn:start_ts="1404180520">
+      <status xil_pn:value="AbortedRun"/>
       <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForPredecessor"/>
+      <status xil_pn:value="OutOfDateForced"/>
       <outfile xil_pn:name="isim.cmd"/>
       <outfile xil_pn:name="yafc_tb_isim_beh.wdb"/>
     </transform>

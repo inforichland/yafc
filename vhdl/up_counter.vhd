@@ -5,28 +5,27 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.common.all;
+
 entity up_counter is
 
-  generic
-    (
-      WIDTH : positive;
-      RESET_VALUE : unsigned( 9 downto 0 )
-      );
+  generic (
+    g_reset_value : address
+  );
 
-  port
-    (
-      clk		  : in std_logic;
-      rst_n	  : in std_logic;
-      inc	      : in std_logic;
-      load      : in std_logic;
-      d         : in std_logic_vector( WIDTH-1 downto 0 );
-      q		  : out std_logic_vector( WIDTH-1 downto 0 )
-      );
+  port (
+    clk		  : in std_logic;
+    rst_n	  : in std_logic;
+    inc	    : in std_logic;
+    load    : in std_logic;
+    d       : in address;
+    q		    : out address
+  );
 
 end entity;
 
 architecture rtl of up_counter is
-  signal cntr : unsigned( WIDTH-1 downto 0 ) := RESET_VALUE;
+  signal cntr : unsigned( c_address_width-1 downto 0 ) := unsigned( g_reset_value );
 begin
 
   -- Assign outputs
@@ -36,7 +35,7 @@ begin
   process( clk, rst_n )
   begin
     if rst_n = '0' then
-      cntr <= RESET_VALUE;
+      cntr <= unsigned( g_reset_value );
     elsif( rising_edge( clk ) ) then
       if load = '1' then
         cntr <= unsigned( d );

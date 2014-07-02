@@ -19,28 +19,28 @@ end entity;
 
 architecture structural of yafc is
   -- program counter signals
-  signal pc_inc, pc_load : std_logic := '0';
-  signal pc : std_logic_vector( 9 downto 0 ) := "0000000000";
-  signal pc_next : std_logic_vector( 9 downto 0 );
-  signal insn : std_logic_vector( 15 downto 0 ) := ( others => '0' );
+  signal pc_inc, pc_load  : std_logic := '0';
+  signal pc               : address := ( others => '0' );
+  signal pc_next          : address;
+  signal insn             : word := ( others => '0' );
   
   -- RAM signals
-  signal mem_addr : std_logic_vector( 9 downto 0 ) := ( others => '0' );
-  signal mem_write, mem_read : std_logic_vector( 15 downto 0 ) := ( others => '0' );
-  signal mem_we, mem_re : std_logic := '0';
+  signal mem_addr             : address := ( others => '0' );
+  signal mem_write, mem_read  : word := ( others => '0' );
+  signal mem_we, mem_re       : std_logic := '0';
 
   -- data stack signals
-  signal dpush, dpop : std_logic := '0';
+  signal dpush, dpop        : std_logic := '0';
   signal dtos_sel, dnos_sel : std_logic_vector( 1 downto 0 ) := "00";
-  signal dtos_in, dnos_in : word := ( others => '0' );
-  signal dstk_sel : std_logic := '0';
-  signal dtos, dnos : word := ( others => '0' );
+  signal dtos_in, dnos_in   : word := ( others => '0' );
+  signal dstk_sel           : std_logic := '0';
+  signal dtos, dnos         : word := ( others => '0' );
 
   -- return stack
-  signal rpush, rpop : std_logic := '0';
-  signal rtos_sel : std_logic := '0';
-  signal rtos_in : word := ( others => '0' );
-  signal rtos : word := ( others => '0' );
+  signal rpush, rpop  : std_logic := '0';
+  signal rtos_sel     : std_logic := '0';
+  signal rtos_in      : word := ( others => '0' );
+  signal rtos         : word := ( others => '0' );
 
   -- logic of ALU
   signal alu_results : alu_results_t := ( others => ( others => '0') );
@@ -52,7 +52,7 @@ begin
   ----------------------------------------------------------------------
   -- TODO:
   --  - Add call / ret instructions
-  --  - Switch to Harvard arch
+  --  - Switch to Harvard arch (?)
   --  - Add I/O (peripheral) bus
   --  - Add interrupts
   --  - Make assembler better
@@ -79,6 +79,7 @@ begin
       -- input to controller
       alu_results	=> alu_results,     -- ALU
       dtos			=> dtos,        -- Data Top-of-Stack
+      dnos      => dnos,        -- Data Next-on-Stack
       rtos			=> rtos,        -- Return Top-of-Stack
       mem_read		=> mem_read,    -- memory read bus
       insn			=> insn,        -- instruction
@@ -119,8 +120,7 @@ begin
   -- program counter
   prog_cntr : entity work.up_counter( rtl )
     generic map (
-      WIDTH => 10,
-      RESET_VALUE => "0000000000"
+      g_RESET_VALUE => ( others => '0' )
       )
     port map (
       clk     => clk,
