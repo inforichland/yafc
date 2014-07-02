@@ -20,6 +20,7 @@ class Assembler( object ):
     _NIP_ = '000' + '10000' + '00000000'
     _TCK_ = '000' + '10001' + '00000000'
     _OVR_ = '000' + '10010' + '00000000'
+    _EQU_ = '000' + '10011' + '00000000'
     _NOP_ = '0'*16
 
     def __init__( self ):
@@ -32,6 +33,12 @@ class Assembler( object ):
     def _addr2bin( self, addr ):
         return bin(addr)[2:].zfill( self.addr_width )
 
+    def _findname( self, name ):
+        for addr in self.words:
+            if self.words[ addr ][ 0 ] == name:
+                return addr
+        assert 0, ('Name not found %s' % name)
+        
     def code_append( self, c ):
         self.code.append( c )
         self.instr = self.instr + 1
@@ -84,11 +91,13 @@ class Assembler( object ):
         baddr = self._addr2bin( lbladdr )
         self.code_append( Assembler._1BR_ + baddr )
 
-    def fetch( self, addr ):
+    def fetch( self, name ):
+        addr = self._findname( name )
         self.lit( addr )
         self.code_append( Assembler._FTC_ )
 
-    def store( self, addr ):
+    def store( self, name ):
+        addr = self._findname( name )
         self.lit( addr )
         self.code_append( Assembler._STR_ )
         self.code_append( Assembler._DRP_ )
@@ -120,15 +129,18 @@ class Assembler( object ):
     def over( self ):
         self.code_append( Assembler._OVR_ )
 
-    def resw( self, addr, word ):
-        self.words[ addr ] = word
+    def equal( self ):
+        self.code_append( Assembler._EQU_ )
+
+    def resw( self, name, addr, word ):
+        self.words[ addr ] = ( name, word )
     
     def full_code( self ):
         l = len(self.code)
         fcode = self.code[::]
         for i in xrange( l, 2**self.addr_width ):
             if self.words.has_key( i ):
-                word = bin(self.words[ i ])[2:].rjust( 16, '0' )
+                word = bin(self.words[ i ][ 1 ])[2:].rjust( 16, '0' )
                 fcode.append( word )
             else:
                 fcode.append( Assembler._NOP_ )
@@ -141,13 +153,15 @@ class Assembler( object ):
     
 def looper():
     a = Assembler()
-    a.resw( 0x3ff, 10 )
+    a.resw( 'count', 0x3ff, 10 )
     a.label( 'loop' )
-    a.fetch( 0x3ff )
+    a.fetch( 'count' )
     a.lit( 1 )
     a.sub()
     a.out()
     a.dup()
-    a.store( 0x3ff )
-    a.branch1( 'loop' )
+    a.store( 'count' )
+    a.lit( 0 )
+    a.equal()
+    a.branch0( 'loop' )
     return a

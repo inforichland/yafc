@@ -24,11 +24,12 @@ begin
     variable not_shiftable : std_logic;
   begin
     
-    not_shiftable := or_vector( tos( 15 downto 4 ) );
-
+    -- arithmetic
     alu_results.add_result <= std_logic_vector( signed( nos ) + signed( tos ) );
     alu_results.sub_result <= std_logic_vector( signed( nos ) - signed( tos ) );
 
+    -- logic
+    not_shiftable := or_vector( tos( 15 downto 4 ) );
     if not_shiftable = '1' then
       alu_results.sll_result <= ( others => '0' );
       alu_results.srl_result <= ( others => '0' );
@@ -36,6 +37,14 @@ begin
       alu_results.sll_result <= std_logic_vector( shift_left( signed( nos ), to_integer( signed( tos ) ) ) );
       alu_results.srl_result <= std_logic_vector( shift_right( signed( nos ), to_integer( signed( tos ) ) ) );
     end if;
+    
+    -- relational
+    if tos = nos then
+      alu_results.eq_result <= ( others => '1' );
+    else
+      alu_results.eq_result <= ( others => '0' );
+    end if;
+    
   end process alu_proc;
 
 end Behavioral;

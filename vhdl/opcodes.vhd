@@ -34,6 +34,7 @@ package opcodes is
   constant f_nip : fcode := "10000";		  -- nip
   constant f_tck : fcode := "10001";		  -- tuck
   constant f_ovr : fcode := "10010";		  -- over
+  constant f_equ : fcode := "10011";      -- equals (=)
 
 end opcodes;
 

@@ -19,6 +19,7 @@ package common is
     sub_result : word;
     sll_result : word;
     srl_result : word;
+    eq_result  : word;
   end record;
 
 end common;

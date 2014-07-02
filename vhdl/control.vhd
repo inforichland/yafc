@@ -253,6 +253,12 @@ begin
               dtos_sel  <= "01";
               dnos_sel  <= "01";
               dpush     <= '1';
+              
+            when f_equ => -- = ( a b -- t/f )
+              dtos_in    <= alu_results.eq_result;
+              dtos_sel    <= "11";
+              dnos_sel    <= "10";
+              dpop       <= '1';
             
             when others =>  -- NOP
               null;
