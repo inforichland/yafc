@@ -5,7 +5,7 @@ package common is
   constant c_word_width : integer := 16;
   constant c_word_msb   : integer := c_word_width - 1;
   constant c_stack_size : integer := 32;
-  constant c_address_width : integer := 10;
+  constant c_address_width : integer := 13;
 
   subtype word is std_logic_vector( c_word_msb downto 0 );
   subtype address is std_logic_vector( c_address_width-1 downto 0 );
@@ -20,9 +20,6 @@ package common is
     sll_result : word;
     srl_result : word;
   end record;
-
-  -- processor state
-  type state_t is ( st_execute, st_stall );
 
 end common;
 

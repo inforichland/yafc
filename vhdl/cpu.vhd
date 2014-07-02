@@ -120,8 +120,9 @@ begin
   -- program counter
   prog_cntr : entity work.up_counter( rtl )
     generic map (
-      g_RESET_VALUE => ( others => '0' )
-      )
+	   g_width => c_address_width,
+      g_reset_value => "0000000000000"
+	 )
     port map (
       clk     => clk,
       rst_n   => rst_n,
@@ -136,7 +137,7 @@ begin
   ram : entity work.dpram( rtl )
     generic map (
       g_data_width  => 16,
-      g_addr_width  => 10,
+      g_addr_width  => 13,
       g_init        => true,
       g_init_file   => "..\examples\loop.init"
       )

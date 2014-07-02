@@ -10,7 +10,8 @@ use work.common.all;
 entity up_counter is
 
   generic (
-    g_reset_value : address
+    g_width : integer;
+    g_reset_value : std_logic_vector
   );
 
   port (
@@ -18,14 +19,14 @@ entity up_counter is
     rst_n	  : in std_logic;
     inc	    : in std_logic;
     load    : in std_logic;
-    d       : in address;
-    q		    : out address
+    d       : in std_logic_vector( g_width-1 downto 0 );
+    q		    : out std_logic_vector( g_width-1 downto 0 )
   );
 
 end entity;
 
 architecture rtl of up_counter is
-  signal cntr : unsigned( c_address_width-1 downto 0 ) := unsigned( g_reset_value );
+  signal cntr : unsigned( g_width-1 downto 0 ) := unsigned( g_reset_value );
 begin
 
   -- Assign outputs

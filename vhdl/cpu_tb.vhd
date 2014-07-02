@@ -78,7 +78,7 @@ BEGIN
     rst_n <= '1';
 
     
-    wait for clk_period*150;
+    wait for clk_period*200;
 
     
     done <= true;
