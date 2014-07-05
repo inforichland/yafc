@@ -29,27 +29,28 @@ entity control is
     clk         : in   std_logic;
     rst_n       : in   std_logic;
     -- input control
-    alu_results   : in    alu_results_t;
-    dtos          : in   word;
+    alu_results   : in  alu_results_t;
+    dtos          : in  word;
     dnos          : in  word;
-    rtos          : in    word;
-    mem_read      : in   word;
-    insn          : in   word;
+    rtos          : in  word;
+    mem_read      : in  word;
+    insn          : in  word;
+    pc            : in  address;
     -- output control signals
     
     -- data stack
-    dpush      : out   std_logic;
+    dpush      : out std_logic;
     dpop       : out std_logic;
     dtos_sel   : out std_logic_vector( 1 downto 0 );
     dnos_sel   : out std_logic_vector( 1 downto 0 );
     dtos_in    : out word;
-    dnos_in    : out   word;
+    dnos_in    : out word;
     dstk_sel   : out std_logic;
     -- return stack
     rpush      : out std_logic;
     rpop       : out std_logic;
     rtos_sel   : out std_logic;
-    rtos_in      : out word;
+    rtos_in    : out word;
     -- program counter
     pc_inc     : out std_logic;
     pc_load    : out std_logic;
@@ -82,7 +83,7 @@ begin
   end process output_regs;
 
   -- instruction decoding
-  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read )
+  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read, pc )
     procedure pop_dstack is
     begin
       dtos_sel <= "01";
@@ -137,17 +138,17 @@ begin
         
         when m_0bra =>  -- conditional jump (0branch)
           if dtos = "0000000000000000" then
-           pc_load    <= '1';
-           pc_next    <= insn( 12 downto 0 );
+            pc_load    <= '1';
+            pc_next    <= insn( 12 downto 0 );
           end if;
           pop_dstack;
         
-        when m_1bra =>  -- conditional jump (1branch)
-          if dtos /= "0000000000000000" then
-           pc_load    <= '1';
-           pc_next    <= insn( 12 downto 0 );
-          end if;
-          pop_dstack;
+        when m_call =>  -- call a word
+          pc_load     <= '1';
+          pc_next     <= insn( 12 downto 0 );
+          
+          rtos_in     <= "000" & pc;
+          rpush       <= '1';
         
         -- function
         when m_func =>
@@ -263,6 +264,19 @@ begin
             when others =>  -- NOP
               null;
           end case; -- case( fcode )
+      
+          ------------------------
+          -- check for subcodes --
+          ------------------------
+          
+          -- ret (return from word)
+          if insn( s_ret ) = '1' then
+            rtos_sel  <= '1';
+            rpop      <= '1';
+            
+            pc_load   <= '1';
+            pc_next   <= rtos( insn'high downto 0 );
+          end if;
       
         when others => 
           null;

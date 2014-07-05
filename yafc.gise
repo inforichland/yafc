@@ -22,9 +22,97 @@
   <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="yafc.xise"/>
 
   <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc.prj"/>
+    <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="yafc.stx"/>
+    <file xil_pn:fileType="FILE_XST" xil_pn:name="yafc.xst"/>
     <file xil_pn:fileType="FILE_NCD" xil_pn:name="yafc_guide.ncd" xil_pn:origination="imported"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc_tb_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="yafc_tb_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="yafc_tb_isim_beh.wdb"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="yafc_tb_stx_beh.prj"/>
   </files>
 
-  <transforms xmlns="http://www.xilinx.com/XMLSchema"/>
+  <transforms xmlns="http://www.xilinx.com/XMLSchema">
+    <transform xil_pn:end_ts="1404349555" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1404349555">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1404437381" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1404437381">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="vhdl/alu.vhd"/>
+      <outfile xil_pn:name="vhdl/common.vhd"/>
+      <outfile xil_pn:name="vhdl/control.vhd"/>
+      <outfile xil_pn:name="vhdl/cpu.vhd"/>
+      <outfile xil_pn:name="vhdl/cpu_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/data_stack.vhd"/>
+      <outfile xil_pn:name="vhdl/data_stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram_async.vhd"/>
+      <outfile xil_pn:name="vhdl/opcodes.vhd"/>
+      <outfile xil_pn:name="vhdl/reset.vhd"/>
+      <outfile xil_pn:name="vhdl/return_stack.vhd"/>
+      <outfile xil_pn:name="vhdl/return_stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/stack.vhd"/>
+      <outfile xil_pn:name="vhdl/stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/up_counter.vhd"/>
+    </transform>
+    <transform xil_pn:end_ts="1404349555" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="4539637675162688126" xil_pn:start_ts="1404349555">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1404349555" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-6659082073514710276" xil_pn:start_ts="1404349555">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1404349555" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="5973281754098171920" xil_pn:start_ts="1404349555">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1404437394" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1404437394">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="vhdl/alu.vhd"/>
+      <outfile xil_pn:name="vhdl/common.vhd"/>
+      <outfile xil_pn:name="vhdl/control.vhd"/>
+      <outfile xil_pn:name="vhdl/cpu.vhd"/>
+      <outfile xil_pn:name="vhdl/cpu_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/data_stack.vhd"/>
+      <outfile xil_pn:name="vhdl/data_stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram.vhd"/>
+      <outfile xil_pn:name="vhdl/dpram_async.vhd"/>
+      <outfile xil_pn:name="vhdl/opcodes.vhd"/>
+      <outfile xil_pn:name="vhdl/reset.vhd"/>
+      <outfile xil_pn:name="vhdl/return_stack.vhd"/>
+      <outfile xil_pn:name="vhdl/return_stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/stack.vhd"/>
+      <outfile xil_pn:name="vhdl/stack_tb.vhd"/>
+      <outfile xil_pn:name="vhdl/up_counter.vhd"/>
+    </transform>
+    <transform xil_pn:end_ts="1404437412" xil_pn:in_ck="6326575250203663853" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-3457904627901917396" xil_pn:start_ts="1404437394">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="fuse.log"/>
+      <outfile xil_pn:name="isim"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="xilinxsim.ini"/>
+      <outfile xil_pn:name="yafc_tb_beh.prj"/>
+      <outfile xil_pn:name="yafc_tb_isim_beh.exe"/>
+    </transform>
+    <transform xil_pn:end_ts="1404437413" xil_pn:in_ck="-875842907350066265" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-186443182730400976" xil_pn:start_ts="1404437412">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="isim.cmd"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="yafc_tb_isim_beh.wdb"/>
+    </transform>
+  </transforms>
 
 </generated_project>

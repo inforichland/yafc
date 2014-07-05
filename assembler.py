@@ -1,7 +1,7 @@
 class Assembler( object ):
     _BR_  = '001'
     _0BR_ = '010'
-    _1BR_ = '011'
+    _CAL_ = '011'
     _ADD_ = '000' + '00001' + '00000000'
     _SUB_ = '000' + '00010' + '00000000'
     _OUT_ = '000' + '00011' + '00000000'
@@ -9,7 +9,7 @@ class Assembler( object ):
     _SRA_ = '000' + '00101' + '00000000'
     _DUP_ = '000' + '00110' + '00000000'
     _NOT_ = '000' + '00111' + '00000000'
-    _FTC_  = '000' + '01000' + '00000000'
+    _FTC_ = '000' + '01000' + '00000000'
     _STR_ = '000' + '01001' + '00000000'
     _DTR_ = '000' + '01010' + '00000000'
     _DRP_ = '000' + '01011' + '00000000'
@@ -23,9 +23,12 @@ class Assembler( object ):
     _EQU_ = '000' + '10011' + '00000000'
     _NOP_ = '0'*16
 
+    _RET_MASK_ = 0x1 << 7
+
     def __init__( self ):
         self.code = []
         self.labels = {}
+        self.labels_inv = {}
         self.instr = 0
         self.words = {}
         self.addr_width = 13
@@ -45,6 +48,7 @@ class Assembler( object ):
 
     def label( self, name ):
         self.labels[ name ] = self.instr
+        self.labels_inv[ self.isntr ] = name
 
     def lit( self, l ):
         assert l <= (2**15) and l >= -(2**15)+1
@@ -65,9 +69,10 @@ class Assembler( object ):
         self.code_append( Assembler._OUT_ )
 
     def branch( self, lbl ):
-        lbladdr = self.labels[ lbl ]
-        baddr = self._addr2bin( lbladdr )
-        self.code_append( Assembler._BR_ + baddr )
+        #lbladdr = self.labels[ lbl ]
+        #baddr = self._addr2bin( lbladdr )
+        #self.code_append( Assembler._BR_ + baddr )
+        self.code_append( Assembler._BR_ + lbl )
     
     def sla( self ):
         self.code_append( Assembler._SLA_ )
@@ -76,9 +81,10 @@ class Assembler( object ):
         self.code_append( Assembler._SRA_ )
 
     def branch0( self, lbl ):
-        lbladdr = self.labels[ lbl ]
-        baddr = self._addr2bin( lbladdr )
-        self.code_append( Assembler._0BR_ + baddr )
+##        lbladdr = self.labels[ lbl ]
+##        baddr = self._addr2bin( lbladdr )
+##        self.code_append( Assembler._0BR_ + baddr )
+        self.code_append( Assembler._0BR_ + lbl )
 
     def dup( self ):
         self.code_append( Assembler._DUP_ )
@@ -86,10 +92,11 @@ class Assembler( object ):
     def not_( self ):
         self.code_append( Assembler._NOT_ )
 
-    def branch1( self, lbl ):
-        lbladdr = self.labels[ lbl ]
-        baddr = self._addr2bin( lbladdr )
-        self.code_append( Assembler._1BR_ + baddr )
+    def call( self, lbl ):
+##        lbladdr = self.labels[ lbl ]
+##        baddr = self._addr2bin( lbladdr )
+##        self.code_append( Assembler._1BR_ + baddr )
+        self.code_append( Assembler._CAL_ + lbl )
 
     def fetch( self, name ):
         addr = self._findname( name )
@@ -132,6 +139,9 @@ class Assembler( object ):
     def equal( self ):
         self.code_append( Assembler._EQU_ )
 
+    def ret( self ):
+        self.code_append( Assembler._NOP_ | Assembler._RET_MASK_ )
+
     def resw( self, name, addr, word ):
         self.words[ addr ] = ( name, word )
     
@@ -139,6 +149,7 @@ class Assembler( object ):
         l = len(self.code)
         fcode = self.code[::]
         for i in xrange( l, 2**self.addr_width ):
+            if self.labels
             if self.words.has_key( i ):
                 word = bin(self.words[ i ][ 1 ])[2:].rjust( 16, '0' )
                 fcode.append( word )

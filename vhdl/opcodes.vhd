@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+use work.common.all;
+
 package opcodes is
 
   -- literal
@@ -13,7 +15,7 @@ package opcodes is
   constant m_func : mcode := "00";
   constant m_jump : mcode := "01";
   constant m_0bra : mcode := "10";
-  constant m_1bra : mcode := "11";
+  constant m_call : mcode := "11";
 
   subtype fcode is std_logic_vector( 4 downto 0 );
   constant f_add : fcode := "00001";       -- +
@@ -35,6 +37,9 @@ package opcodes is
   constant f_tck : fcode := "10001";		  -- tuck
   constant f_ovr : fcode := "10010";		  -- over
   constant f_equ : fcode := "10011";      -- equals (=)
+
+  -- Subcodes (single bit mask in an instruction word)
+  constant s_ret : integer range 0 to word'length := 7;
 
 end opcodes;
 

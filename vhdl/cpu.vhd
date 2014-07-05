@@ -82,7 +82,8 @@ begin
       dnos      => dnos,        -- Data Next-on-Stack
       rtos			=> rtos,        -- Return Top-of-Stack
       mem_read		=> mem_read,    -- memory read bus
-      insn			=> insn,        -- instruction
+      insn			=> insn,        -- instruction,
+      pc        => pc,           -- PC
       -- data stack
       dpush			=> dpush,
       dpop			=> dpop,
