@@ -12,7 +12,9 @@ entity yafc is
       o_out       : out word;
       o_strobe    : out std_logic;
       o_debug_1   : out word;
-      o_debug_2   : out word
+      o_debug_2   : out word;
+      o_debug_3   : out word;
+      o_debug_4   : out word
       );
 
 end entity;
@@ -62,6 +64,8 @@ begin
   -- debug outputs
   o_debug_1 <= dtos;
   o_debug_2 <= dnos;
+  o_debug_3 <= "000" & pc;
+  o_debug_4 <= insn;
 
   -- async assert, sync deassert
   reset_conditioner : entity work.reset( Behavioral )

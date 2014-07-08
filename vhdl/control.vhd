@@ -70,7 +70,7 @@ architecture Behavioral of control is
   -- internal output signals
   signal o_out_i : word := ( others => '0' );
   signal o_strobe_i : std_logic := '0';
-  signal stall, stall_i : std_logic := '0';
+  signal stall, stall_i : std_logic := '1';
 begin
   
   -- create registers for o_out and o_strobe
@@ -78,6 +78,7 @@ begin
   begin
     if rst_n = '0' then
       o_strobe <= '0';
+      stall   <= '1';
     elsif rising_edge( clk ) then
       o_out <= o_out_i;
       o_strobe <= o_strobe_i;
@@ -157,7 +158,7 @@ begin
             pc_load     <= '1';
             pc_next     <= insn( 12 downto 0 );
             
-            rtos_in     <= "000" & std_logic_vector( unsigned( pc ) + 1 );
+            rtos_in     <= "000" & pc;
             rpush       <= '1';
 
             stall_i       <= '1';

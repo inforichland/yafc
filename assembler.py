@@ -185,7 +185,12 @@ def looper():
     a.resw( 'count', 0x3ff, 10 )
     a.label( 'loop' )
     a.fetch( 'count' )
+
     a.call( 'sub1&out' )
+    #a.lit( 1 )
+    #a.sub()
+    #a.out()
+
     a.dup()
     a.store( 'count' )
     a.lit( 0 )

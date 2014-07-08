@@ -21,6 +21,7 @@ ARCHITECTURE test OF yafc_tb IS
   signal o_out : word;
   signal o_strobe : std_logic;
   signal tos, nos : word;
+  signal pc, insn : word;
   
   -- Clock period definitions
   constant clk_period : time := 10 ns;
@@ -36,10 +37,26 @@ BEGIN
     o_out => o_out,
     o_strobe => o_strobe,
     o_debug_1 => tos,
-    o_debug_2 => nos
+    o_debug_2 => nos,
+    o_debug_3 => pc,
+    o_debug_4 => insn
     );
 
   clk <= '0' when done else not clk after clk_period / 2;
+
+--  debug : process
+--    variable l : line;
+--  begin
+--    wait until clk'event and clk = '1' and rst_n = '1';
+--    write( l, pc );
+--    write( l, string'( "  " ) );
+--    write( l, insn );
+--    write( l, string'( "  " ) );
+--    write( l, tos );
+--    write( l, string'( "  " ) );
+--    write( l, nos );
+--    writeline( output, l );
+--  end process debug;
 
   process
     variable l : line;
