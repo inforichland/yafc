@@ -19,6 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use ieee.numeric_std.all;
 
 use work.common.all;
 use work.opcodes.all;
@@ -69,6 +70,7 @@ architecture Behavioral of control is
   -- internal output signals
   signal o_out_i : word := ( others => '0' );
   signal o_strobe_i : std_logic := '0';
+  signal stall, stall_i : std_logic := '0';
 begin
   
   -- create registers for o_out and o_strobe
@@ -79,11 +81,12 @@ begin
     elsif rising_edge( clk ) then
       o_out <= o_out_i;
       o_strobe <= o_strobe_i;
+      stall <= stall_i;
     end if;
   end process output_regs;
 
   -- instruction decoding
-  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read, pc )
+  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read, pc, stall )
     procedure pop_dstack is
     begin
       dtos_sel <= "01";
@@ -114,7 +117,8 @@ begin
     mem_addr    <= ( others => '0' );
     mem_write   <= ( others => '0' );
     mem_we      <= '0';
-    
+    stall_i     <= '0';
+
     -- oh hell, let's just issue a memory read every cycle, it's "free"
     mem_addr    <= dtos( 12 downto 0 );
 	 
@@ -122,165 +126,175 @@ begin
     mcode := insn( 14 downto 13 );
     fcode := insn( 12 downto 8 );
     
-    -- decode the instruction
-    if insn( insn'high ) = '1' then -- literal
-       dtos_in <= insn( insn'high-1 ) & insn( insn'high-1 downto 0 ); -- sign-extend the literal by 1 bit
-       dtos_sel <= "11";
-       dnos_sel <= "01";
-       dpush <= '1';
-    else
-      -- which major code is this instruction?
-      case mcode is
-      
-        when m_jump =>  -- unconditional jump
-          pc_load    <= '1';
-          pc_next    <= insn( 12 downto 0 );
+    if stall = '1' then
+      stall_i   <= '0';
+      pc_inc  <= '0';
+    else    
+      -- decode the instruction
+      if insn( insn'high ) = '1' then -- literal
+         dtos_in <= insn( insn'high-1 ) & insn( insn'high-1 downto 0 ); -- sign-extend the literal by 1 bit
+         dtos_sel <= "11";
+         dnos_sel <= "01";
+         dpush <= '1';
+      else
+        -- which major code is this instruction?
+        case mcode is
         
-        when m_0bra =>  -- conditional jump (0branch)
-          if dtos = "0000000000000000" then
+          when m_jump =>  -- unconditional jump
             pc_load    <= '1';
             pc_next    <= insn( 12 downto 0 );
-          end if;
-          pop_dstack;
-        
-        when m_call =>  -- call a word
-          pc_load     <= '1';
-          pc_next     <= insn( 12 downto 0 );
+            stall_i      <= '1';
           
-          rtos_in     <= "000" & pc;
-          rpush       <= '1';
+          when m_0bra =>  -- conditional jump (0branch)
+            if dtos = "0000000000000000" then
+              pc_load    <= '1';
+              pc_next    <= insn( 12 downto 0 );
+              stall_i      <= '1';
+            end if;
+            pop_dstack;
+          
+          when m_call =>  -- call a word
+            pc_load     <= '1';
+            pc_next     <= insn( 12 downto 0 );
+            
+            rtos_in     <= "000" & std_logic_vector( unsigned( pc ) + 1 );
+            rpush       <= '1';
+
+            stall_i       <= '1';
+          
+          -- function
+          when m_func =>
         
-        -- function
-        when m_func =>
-      
-          -- execute the function
-          case fcode is
-            when f_add =>   -- add
-              dtos_in    <= alu_results.add_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
+            -- execute the function
+            case fcode is
+              when f_add =>   -- add
+                dtos_in    <= alu_results.add_result;
+                dtos_sel    <= "11";
+                dnos_sel    <= "10";
+                dpop       <= '1';
+              
+              when f_sub =>   -- subtract
+                dtos_in    <= alu_results.sub_result;
+                dtos_sel    <= "11";
+                dnos_sel    <= "10";
+                dpop       <= '1';   
+              
+              when f_out =>   -- output TOS (non-destructively)
+                o_out_i      <= dtos;
+                o_strobe_i    <= '1';
+              
+              when f_sla =>   -- arithmetic left shift
+                dtos_in    <= alu_results.sll_result;
+                dtos_sel    <= "11";
+                dnos_sel    <= "10";
+                dpop       <= '1';
+              
+              when f_sra =>   -- arithmetic right shift
+                dtos_in    <= alu_results.srl_result;
+                dtos_sel    <= "11";
+                dnos_sel    <= "10";
+                dpop       <= '1';
+              
+              when f_dup =>  -- dup
+                dtos_sel    <= "00";
+                dnos_sel    <= "01";
+                dstk_sel    <= '0';
+                dpush       <= '1';
+              
+              when f_not =>  -- not
+                dtos_sel    <= "11";
+                dtos_in    <= not dtos;
+              
+              when f_ftc =>   -- fetch   @
+                dtos_in    <= mem_read;
+                dtos_sel    <= "11";
+                          
+              when f_dtr =>   -- >R   "to R"
+                rpush     <= '1';
+                rtos_in   <= dtos;
+                dtos_sel  <= "01";
+                dnos_sel  <= "10";
+                dpop      <= '1'; 
+              
+              when f_str =>   -- store   !
+                mem_addr  <= dtos( 12 downto 0 );
+                mem_write <= dnos;
+                mem_we    <= '1';
+              
+                pop_dstack;
+              
+              when f_pop =>   -- drop
+                pop_dstack;
+              
+              when f_rtd =>    -- R>  "from R"
+                rtos_sel  <= '1';
+                rpop      <= '1';
+                dtos_in   <= rtos;
+                dtos_sel  <= "11";
+                dnos_sel  <= "01";
+                dpush     <= '1';   
+              
+              when f_rot =>	-- rot ( a b c -- b c a )
+                dtos_sel  <= "10";
+                dnos_sel  <= "01";
+                dpush     <= '1';
+                dpop      <= '1';
+              
+              when f_nrt =>	-- -rot ( a b c -- c b a )
+                dtos_sel  <= "01";
+                dnos_sel  <= "10";
+                dstk_sel  <= '1';
+                dpush     <= '1';
+                dpop      <= '1';
+              
+              when f_swp =>	-- swap ( a b -- b a )
+                dtos_sel  <= "01";
+                dnos_sel  <= "01";
+              
+              when f_nip =>	-- nip	( a b c -- a c )
+                dtos_sel  <= "00";
+                dnos_sel  <= "10";
+                dpop      <= '1';
+              
+              when f_tck => 	-- tuck	( a b -- b a b )
+                dtos_sel  <= "00";
+                dnos_sel  <= "00";
+                dstk_sel  <= '1';
+                dpush     <= '1';
+              
+              when f_ovr =>	-- over	( a b -- a b a )
+                dtos_sel  <= "01";
+                dnos_sel  <= "01";
+                dpush     <= '1';
+                
+              when f_equ => -- = ( a b -- t/f )
+                dtos_in    <= alu_results.eq_result;
+                dtos_sel    <= "11";
+                dnos_sel    <= "10";
+                dpop       <= '1';
+              
+              when others =>  -- NOP
+                null;
+            end case; -- case( fcode )
+        
+            ------------------------
+            -- check for subcodes --
+            ------------------------
             
-            when f_sub =>   -- subtract
-              dtos_in    <= alu_results.sub_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';   
-            
-            when f_out =>   -- output TOS (non-destructively)
-              o_out_i      <= dtos;
-              o_strobe_i    <= '1';
-            
-            when f_sla =>   -- arithmetic left shift
-              dtos_in    <= alu_results.sll_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-            
-            when f_sra =>   -- arithmetic right shift
-              dtos_in    <= alu_results.srl_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-            
-            when f_dup =>  -- dup
-              dtos_sel    <= "00";
-              dnos_sel    <= "01";
-              dstk_sel    <= '0';
-              dpush       <= '1';
-            
-            when f_not =>  -- not
-              dtos_sel    <= "11";
-              dtos_in    <= not dtos;
-            
-            when f_ftc =>   -- fetch   @
-              dtos_in    <= mem_read;
-              dtos_sel    <= "11";
-                        
-            when f_dtr =>   -- >R   "to R"
-              rpush     <= '1';
-              rtos_in   <= dtos;
-              dtos_sel  <= "01";
-              dnos_sel  <= "10";
-              dpop      <= '1'; 
-            
-            when f_str =>   -- store   !
-              mem_addr  <= dtos( 12 downto 0 );
-              mem_write <= dnos;
-              mem_we    <= '1';
-            
-              pop_dstack;
-            
-            when f_pop =>   -- drop
-              pop_dstack;
-            
-            when f_rtd =>    -- R>  "from R"
+            -- ret (return from word)
+            if insn( s_ret ) = '1' then
               rtos_sel  <= '1';
               rpop      <= '1';
-              dtos_in   <= rtos;
-              dtos_sel  <= "11";
-              dnos_sel  <= "01";
-              dpush     <= '1';   
-            
-            when f_rot =>	-- rot ( a b c -- b c a )
-              dtos_sel  <= "10";
-              dnos_sel  <= "01";
-              dpush     <= '1';
-              dpop      <= '1';
-            
-            when f_nrt =>	-- -rot ( a b c -- c b a )
-              dtos_sel  <= "01";
-              dnos_sel  <= "10";
-              dstk_sel  <= '1';
-              dpush     <= '1';
-              dpop      <= '1';
-            
-            when f_swp =>	-- swap ( a b -- b a )
-              dtos_sel  <= "01";
-              dnos_sel  <= "01";
-            
-            when f_nip =>	-- nip	( a b c -- a c )
-              dtos_sel  <= "00";
-              dnos_sel  <= "10";
-              dpop      <= '1';
-            
-            when f_tck => 	-- tuck	( a b -- b a b )
-              dtos_sel  <= "00";
-              dnos_sel  <= "00";
-              dstk_sel  <= '1';
-              dpush     <= '1';
-            
-            when f_ovr =>	-- over	( a b -- a b a )
-              dtos_sel  <= "01";
-              dnos_sel  <= "01";
-              dpush     <= '1';
               
-            when f_equ => -- = ( a b -- t/f )
-              dtos_in    <= alu_results.eq_result;
-              dtos_sel    <= "11";
-              dnos_sel    <= "10";
-              dpop       <= '1';
-            
-            when others =>  -- NOP
-              null;
-          end case; -- case( fcode )
-      
-          ------------------------
-          -- check for subcodes --
-          ------------------------
-          
-          -- ret (return from word)
-          if insn( s_ret ) = '1' then
-            rtos_sel  <= '1';
-            rpop      <= '1';
-            
-            pc_load   <= '1';
-            pc_next   <= rtos( insn'high downto 0 );
-          end if;
-      
-        when others => 
-          null;
-      end case; -- case( mcode )
-    end if; -- insn( insn'high ) = 0
+              pc_load   <= '1';
+              pc_next   <= rtos( pc_next'high downto 0 );
+              stall_i   <= '1';
+            end if;
+        
+          when others => 
+            null;
+        end case; -- case( mcode )
+      end if; -- insn( insn'high ) = 0
+    end if; -- if stall
   end process decode;
 end Behavioral;

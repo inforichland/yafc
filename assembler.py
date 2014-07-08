@@ -23,7 +23,7 @@ class Assembler( object ):
     _EQU_ = '000' + '10011' + '00000000'
     _NOP_ = '0'*16
 
-    _RET_MASK_ = 0x1 << 7
+    _RET_MASK_ = 16-1 - 7
 
     def __init__( self ):
         self.code = []
@@ -48,7 +48,7 @@ class Assembler( object ):
 
     def label( self, name ):
         self.labels[ name ] = self.instr
-        self.labels_inv[ self.isntr ] = name
+        self.labels_inv[ self.instr ] = name
 
     def lit( self, l ):
         assert l <= (2**15) and l >= -(2**15)+1
@@ -140,20 +140,38 @@ class Assembler( object ):
         self.code_append( Assembler._EQU_ )
 
     def ret( self ):
-        self.code_append( Assembler._NOP_ | Assembler._RET_MASK_ )
+        tmp = '0'*8 + '1'+ '0'*7
+        self.code_append( tmp )
 
     def resw( self, name, addr, word ):
         self.words[ addr ] = ( name, word )
     
     def full_code( self ):
-        l = len(self.code)
-        fcode = self.code[::]
-        for i in xrange( l, 2**self.addr_width ):
-            if self.labels
-            if self.words.has_key( i ):
-                word = bin(self.words[ i ][ 1 ])[2:].rjust( 16, '0' )
-                fcode.append( word )
+        l = len( self.code )
+        fcode = []
+
+        jumpin_major_codes = [Assembler._CAL_, Assembler._0BR_, Assembler._BR_]
+
+        # first pass through, match up labels with addresses
+        for i, c in enumerate( self.code ):
+            f = c[ :3 ]
+            if self.labels_inv.has_key( i ) and f in jumpin_major_codes:
+                label = self.labels_inv[ i ]
+                self.labels[ label ] = i
+                fcode.append( self.code[ i ] )
             else:
+                fcode.append( self.code[ i ] )
+        
+        for i in xrange( 0, 2**self.addr_width ):
+            if i < l and fcode[ i ][ :3 ] in jumpin_major_codes:
+                label = self.labels[ fcode[ i ][ 3: ] ]
+                label = bin( label )[ 2: ].rjust( 13, '0' )
+                fcode[ i ] = fcode[ i ][ :3 ] + label
+                print fcode[ i ][ :3 ], label, i
+            elif self.words.has_key( i ):
+                word = bin( self.words[ i ][ 1 ] )[ 2: ].rjust( 16, '0' )
+                fcode.append( word )
+            elif i >= l:
                 fcode.append( Assembler._NOP_ )
         return fcode
 
@@ -167,12 +185,21 @@ def looper():
     a.resw( 'count', 0x3ff, 10 )
     a.label( 'loop' )
     a.fetch( 'count' )
-    a.lit( 1 )
-    a.sub()
-    a.out()
+    a.call( 'sub1&out' )
     a.dup()
     a.store( 'count' )
     a.lit( 0 )
     a.equal()
     a.branch0( 'loop' )
+    a.call( 'hang' )
+
+    a.label( 'sub1&out' )
+    a.lit( 1 )
+    a.sub()
+    a.out()
+    a.ret()
+
+    a.label( 'hang' )
+    a.branch( 'hang' )
+            
     return a
