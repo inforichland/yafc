@@ -68,12 +68,14 @@ begin
   o_debug_4 <= insn;
 
   -- async assert, sync deassert
-  reset_conditioner : entity work.reset( Behavioral )
-    port map (
-      clk => clk,
-      rst_i => rst_in,
-      rst_o => rst_n
-      );
+  --reset_conditioner : entity work.reset( Behavioral )
+  --  port map (
+  --    clk => clk,
+  --    rst_i => rst_in,
+  --    rst_o => rst_n
+  --    );
+
+  rst_n <= rst_in;
 
   -- main controller
   controller : entity work.control( Behavioral )

@@ -7,6 +7,7 @@ library std;
 use std.textio.all;
 
 use work.common.all;
+use work.txt_util.all;
 
 ENTITY yafc_tb IS
 END yafc_tb;
@@ -44,20 +45,6 @@ BEGIN
 
   clk <= '0' when done else not clk after clk_period / 2;
 
---  debug : process
---    variable l : line;
---  begin
---    wait until clk'event and clk = '1' and rst_n = '1';
---    write( l, pc );
---    write( l, string'( "  " ) );
---    write( l, insn );
---    write( l, string'( "  " ) );
---    write( l, tos );
---    write( l, string'( "  " ) );
---    write( l, nos );
---    writeline( output, l );
---  end process debug;
-
   process
     variable l : line;
   begin
@@ -70,7 +57,7 @@ BEGIN
       writeline( output, l );
     end if;
   end process;
-  
+    
 --    process( tos, nos )
 --        variable l : line;
 --    begin

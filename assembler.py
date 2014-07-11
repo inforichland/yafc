@@ -34,7 +34,7 @@ class Assembler( object ):
         self.addr_width = 13
 
     def _addr2bin( self, addr ):
-        return bin(addr)[2:].zfill( self.addr_width )
+        return bin( addr )[ 2: ].zfill( self.addr_width )
 
     def _findname( self, name ):
         for addr in self.words:
@@ -139,6 +139,9 @@ class Assembler( object ):
     def equal( self ):
         self.code_append( Assembler._EQU_ )
 
+    def nop( self ):
+        self.code_append( Assembler._NOP_ )
+
     def ret( self ):
         tmp = '0'*8 + '1'+ '0'*7
         self.code_append( tmp )
@@ -152,7 +155,7 @@ class Assembler( object ):
 
         jumpin_major_codes = [Assembler._CAL_, Assembler._0BR_, Assembler._BR_]
 
-        # first pass through, match up labels with addresses
+        # first pass through, match up labels with addresses and emit first pass of code
         for i, c in enumerate( self.code ):
             f = c[ :3 ]
             if self.labels_inv.has_key( i ) and f in jumpin_major_codes:
@@ -161,8 +164,10 @@ class Assembler( object ):
                 fcode.append( self.code[ i ] )
             else:
                 fcode.append( self.code[ i ] )
-        
-        for i in xrange( 0, 2**self.addr_width ):
+
+        # patch up code with addresses, pad out to full length
+        #   and insert data
+        for i in xrange( 1, 2**self.addr_width ):
             if i < l and fcode[ i ][ :3 ] in jumpin_major_codes:
                 label = self.labels[ fcode[ i ][ 3: ] ]
                 label = bin( label )[ 2: ].rjust( 13, '0' )
@@ -183,27 +188,32 @@ class Assembler( object ):
 def looper():
     a = Assembler()
     a.resw( 'count', 0x3ff, 10 )
+    a.nop()
+
+    # beginning of loop
     a.label( 'loop' )
     a.fetch( 'count' )
 
     a.call( 'sub1&out' )
-    #a.lit( 1 )
-    #a.sub()
-    #a.out()
 
     a.dup()
     a.store( 'count' )
     a.lit( 0 )
     a.equal()
     a.branch0( 'loop' )
+    #end of loop
+
+    # done with loop, run word 'hang,' which sits in an infinite loop
     a.call( 'hang' )
 
+    # word 'sub1&out', which subtracts 1 and outputs to I/O
     a.label( 'sub1&out' )
     a.lit( 1 )
     a.sub()
     a.out()
     a.ret()
 
+    # word 'hang' which is an infinite loop of NOP
     a.label( 'hang' )
     a.branch( 'hang' )
             
