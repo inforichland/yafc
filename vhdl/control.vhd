@@ -71,7 +71,6 @@ architecture Behavioral of control is
   signal o_out_i : word := ( others => '0' );
   signal o_strobe_i : std_logic := '0';
   signal stall, stall_i : std_logic := '1';
-  signal stall_prev : std_logic := '1';
 begin
   
   -- create registers for o_out and o_strobe
@@ -84,7 +83,6 @@ begin
       o_out <= o_out_i;
       o_strobe <= o_strobe_i;
       stall <= stall_i;
-      stall_prev <= stall;
     end if;
   end process output_regs;
 
@@ -126,19 +124,22 @@ begin
     mcode := insn( 14 downto 13 );
     fcode := insn( 12 downto 8 );
     
-    if stall = '1' then -- and stall_prev = '1' then --and pc = "0000000000000" then -- just out of reset
-      stall_i   <= '0';
-      --pc_inc    <= '0';
+    -- stalling or executing?
+    if stall = '1' then
+      stall_i   <= '0'; -- only ever need one cycle of stalling right now
     else
       -- decode the instruction
       if insn( insn'high ) = '1' then -- literal
-         dtos_in  <= insn( insn'high-1 ) & insn( insn'high-1 downto 0 ); -- sign-extend the literal by 1 bit
-         dtos_sel <= "11";
-         dnos_sel <= "01";
-         dpush    <= '1';
-         mem_addr <= insn( 12 downto 0 );
+        dtos_in  <= insn( insn'high-1 ) & insn( insn'high-1 downto 0 ); -- sign-extend the literal by 1 bit
+        dtos_sel <= "11";
+        dnos_sel <= "01";
+        dpush    <= '1';
+        -- if it's a new literal that's going on the stack, it could be an address to read from memory
+        mem_addr <= insn( 12 downto 0 );
       else
-         mem_addr <= dtos( 12 downto 0 );
+        -- otherwise the memory address to use will come from the top of the D stack
+        mem_addr <= dtos( 12 downto 0 );
+        
         -- which major code is this instruction?
         case mcode is
         

@@ -53,7 +53,6 @@ begin
 
   ----------------------------------------------------------------------
   -- TODO:
-  --  - Add call / ret instructions
   --  - Switch to Harvard arch (?)
   --  - Add I/O (peripheral) bus
   --  - Add interrupts
