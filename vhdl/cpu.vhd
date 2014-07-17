@@ -79,41 +79,46 @@ begin
   -- main controller
   controller : entity work.control( Behavioral )
     port map (
-      clk			=> clk,
+      clk			  => clk,
       rst_n			=> rst_n,
       -- input to controller
       alu_results	=> alu_results,     -- ALU
       dtos			=> dtos,        -- Data Top-of-Stack
       dnos      => dnos,        -- Data Next-on-Stack
       rtos			=> rtos,        -- Return Top-of-Stack
-      mem_read		=> mem_read,    -- memory read bus
+      mem_read	=> mem_read,    -- memory read bus
       insn			=> insn,        -- instruction,
       pc        => pc,           -- PC
+      
       -- data stack
       dpush			=> dpush,
       dpop			=> dpop,
-      dtos_sel		=> dtos_sel,
-      dnos_sel		=> dnos_sel,
-      dtos_in		    => dtos_in,
-      dnos_in		    => dnos_in,
-      dstk_sel		=> dstk_sel,
+      dtos_sel  => dtos_sel,
+      dnos_sel	=> dnos_sel,
+      dtos_in		=> dtos_in,
+      dnos_in		=> dnos_in,
+      dstk_sel	=> dstk_sel,
+      
       -- return stack
       rpush			=> rpush,
       rpop			=> rpop,
-      rtos_sel		=> rtos_sel,
-      rtos_in		    => rtos_in,
-      -- PC
-      pc_inc		    => pc_inc,
-      pc_load		    => pc_load,
-      pc_next		    => pc_next,
+      rtos_sel	=> rtos_sel,
+      rtos_in		=> rtos_in,
+      
+      -- PC     
+      pc_inc		=> pc_inc,
+      pc_load		=> pc_load,
+      pc_next		=> pc_next,
+      
       -- I/O bus
-      o_strobe		=> o_strobe,
+      o_strobe	=> o_strobe,
       o_out			=> o_out,
+      
       -- Memory bus
-      mem_addr		=> mem_addr,
-      mem_write	    => mem_write,
-      mem_we		    => mem_we
-      );
+      mem_addr	=> mem_addr,
+      mem_write	=> mem_write,
+      mem_we		=> mem_we
+    );
   
   -- ALU
   inst_alu : entity work.alu( Behavioral )
@@ -121,14 +126,14 @@ begin
       tos     => dtos,
       nos     => dnos,
       results => alu_results
-      );
+    );
 
   -- program counter
   prog_cntr : entity work.up_counter( rtl )
     generic map (
 	   g_width => c_address_width,
       g_reset_value => "0000000000000"
-	 )
+	  )
     port map (
       clk     => clk,
       rst_n   => rst_n,
@@ -136,7 +141,7 @@ begin
       load    => pc_load,
       d       => pc_next,
       q       => pc
-      );
+    );
   
   -- Dual-Port RAM
   --  contains instructions and working memory
@@ -146,7 +151,7 @@ begin
       g_addr_width  => 13,
       g_init        => true,
       g_init_file   => "..\examples\loop.init"
-      )
+    )
     port map (
       clk     => clk,
       -- instruction port
@@ -159,7 +164,7 @@ begin
       data_b  => mem_write,
       we_b    => mem_we,
       q_b     => mem_read
-      );
+    );
   
   -- the stack
   dstack : entity work.data_stack( Behavioral )
@@ -176,7 +181,7 @@ begin
       tos     => dtos,
       nos     => dnos,
       ros     => open
-      );
+    );
   
   -- Return stack
   rstack : entity work.return_stack( Behavioral )
@@ -188,6 +193,6 @@ begin
       tos_sel	=> rtos_sel,
       tos_in	=> rtos_in,
       tos		=> rtos
-      );
+    );
   
 end structural;

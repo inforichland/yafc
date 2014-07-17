@@ -29,65 +29,71 @@ entity control is
     -- entity control
     clk         : in   std_logic;
     rst_n       : in   std_logic;
-    -- input control
-    alu_results   : in  alu_results_t;
-    dtos          : in  word;
-    dnos          : in  word;
-    rtos          : in  word;
-    mem_read      : in  word;
-    insn          : in  word;
-    pc            : in  address;
-    -- output control signals
+  
+    -- ALU
+    alu_results : in  alu_results_t;
     
     -- data stack
-    dpush      : out std_logic;
-    dpop       : out std_logic;
-    dtos_sel   : out std_logic_vector( 1 downto 0 );
-    dnos_sel   : out std_logic_vector( 1 downto 0 );
-    dtos_in    : out word;
-    dnos_in    : out word;
-    dstk_sel   : out std_logic;
+    dtos        : in  word;
+    dnos        : in  word;
+    dtos_in     : out word;
+    dnos_in     : out word;
+    dpush       : out std_logic;
+    dpop        : out std_logic;
+    dtos_sel    : out std_logic_vector( 1 downto 0 );
+    dnos_sel    : out std_logic_vector( 1 downto 0 );
+    dstk_sel    : out std_logic;
+    
     -- return stack
-    rpush      : out std_logic;
-    rpop       : out std_logic;
-    rtos_sel   : out std_logic;
-    rtos_in    : out word;
+    rtos        : in  word;
+    rtos_in     : out word;
+    rpush       : out std_logic;
+    rpop        : out std_logic;
+    rtos_sel    : out std_logic;
+        
     -- program counter
-    pc_inc     : out std_logic;
-    pc_load    : out std_logic;
-    pc_next    : out address;
-    -- output port
-    o_strobe   : out   std_logic;
-    o_out      : out   word;
-    -- RAM
-    mem_addr   : out address;
-    mem_write  : out word;
-    mem_we     : out std_logic
-    );
+    pc          : in  address;
+    pc_next     : out address;
+    pc_inc      : out std_logic;
+    pc_load     : out std_logic;
+    
+    -- instruction
+    insn        : in  word;
+    
+    -- working memory
+    mem_read    : in  word;
+    mem_write   : out word;
+    mem_addr    : out address;
+    mem_we      : out std_logic;
+    
+    -- I/O
+    io_read     : in  word;
+    io_addr     : out address;
+    io_write    : out word;
+    io_we       : out std_logic;
+    io_re       : out std_logic
+  );
 end control;
 
 architecture Behavioral of control is
   -- internal output signals
-  signal o_out_i : word := ( others => '0' );
-  signal o_strobe_i : std_logic := '0';
-  signal stall, stall_i : std_logic := '1';
+  signal o_out_i        : word        := ( others => '0' );
+  signal o_strobe_i     : std_logic   := '0';
+  signal stall, stall_i : std_logic   := '1';
 begin
   
   -- create registers for o_out and o_strobe
-  output_regs : process( clk, rst_n )
+  output_regs : process( clk )
   begin
-    if rst_n = '0' then
-      o_strobe <= '0';
-      stall   <= '1';
-    elsif rising_edge( clk ) then
-      o_out <= o_out_i;
-      o_strobe <= o_strobe_i;
-      stall <= stall_i;
+    if rising_edge( clk ) then
+      o_out     <= o_out_i;
+      o_strobe  <= o_strobe_i;
+      stall     <= stall_i;
     end if;
   end process output_regs;
 
   -- instruction decoding
-  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read, pc, stall )
+  decode : process( insn, alu_results, dtos, dnos, rtos, mem_read, pc, stall, io_read )
     procedure pop_dstack is
     begin
       dtos_sel <= "01";
@@ -99,13 +105,13 @@ begin
     variable fcode : fcode;
   begin
     -- default values
-    dpush        <= '0'; 
-    dpop         <= '0';
-    dtos_sel     <= "00"; 
-    dnos_sel     <= "00";
-    dtos_in      <= ( others => '0' );
-    dnos_in      <= ( others => '0' );
-    dstk_sel     <= '0';
+    dpush       <= '0'; 
+    dpop        <= '0';
+    dtos_sel    <= "00"; 
+    dnos_sel    <= "00";
+    dtos_in     <= ( others => '0' );
+    dnos_in     <= ( others => '0' );
+    dstk_sel    <= '0';
     rpush       <= '0';
     rpop        <= '0';
     rtos_sel    <= '0';
@@ -119,14 +125,16 @@ begin
     mem_write   <= ( others => '0' );
     mem_we      <= '0';
     stall_i     <= '0';
-	 
+    io_re       <= '0';
+    io_we       <= '0';
+    
     -- grab the major code and function code
     mcode := insn( 14 downto 13 );
     fcode := insn( 12 downto 8 );
     
     -- stalling or executing?
     if stall = '1' then
-      stall_i   <= '0'; -- only ever need one cycle of stalling right now
+      stall_i <= '0'; -- only ever need one cycle of stalling right now
     else
       -- decode the instruction
       if insn( insn'high ) = '1' then -- literal
@@ -135,35 +143,35 @@ begin
         dnos_sel <= "01";
         dpush    <= '1';
         -- if it's a new literal that's going on the stack, it could be an address to read from memory
-        mem_addr <= insn( 12 downto 0 );
+        mem_addr <= insn( c_address_width-1 downto 0 );
       else
         -- otherwise the memory address to use will come from the top of the D stack
-        mem_addr <= dtos( 12 downto 0 );
+        mem_addr <= dtos( c_address_width-1 downto 0 );
         
         -- which major code is this instruction?
         case mcode is
         
           when m_jump =>  -- unconditional jump
             pc_load    <= '1';
-            pc_next    <= insn( 12 downto 0 );
-            stall_i      <= '1';
+            pc_next    <= insn( c_address_width-1 downto 0 );
+            stall_i    <= '1';
           
           when m_0bra =>  -- conditional jump (0branch)
             if dtos = "0000000000000000" then
               pc_load    <= '1';
-              pc_next    <= insn( 12 downto 0 );
-              stall_i      <= '1';
+              pc_next    <= insn( c_address_width-1 downto 0 );
+              stall_i    <= '1';
             end if;
             pop_dstack;
           
           when m_call =>  -- call a word
             pc_load     <= '1';
-            pc_next     <= insn( 12 downto 0 );
+            pc_next     <= insn( c_address_width-1 downto 0 );
             
             rtos_in     <= "000" & pc;
             rpush       <= '1';
 
-            stall_i       <= '1';
+            stall_i     <= '1';
           
           -- function
           when m_func =>
@@ -219,8 +227,8 @@ begin
                 dnos_sel  <= "10";
                 dpop      <= '1'; 
               
-              when f_str =>   -- store   !
-                mem_addr  <= dtos( 12 downto 0 );
+              when f_str =>   -- store   ! [assembler MUST insert a drop after this]
+                mem_addr  <= dtos( c_address_width-1 downto 0 );
                 mem_write <= dnos;
                 mem_we    <= '1';
               
@@ -271,13 +279,24 @@ begin
                 dpush     <= '1';
                 
               when f_equ => -- = ( a b -- t/f )
-                dtos_in    <= alu_results.eq_result;
-                dtos_sel    <= "11";
-                dnos_sel    <= "10";
-                dpop       <= '1';
+                dtos_in   <= alu_results.eq_result;
+                dtos_sel  <= "11";
+                dnos_sel  <= "10";
+                dpop      <= '1';
+              
+              when f_ioo => -- io! ( n a -- ) [assembler MUST insert a drop after this]
+                io_addr   <= dtos( c_address_width-1 downto 0 );
+                io_write  <= dnos;
+                io_we     <= '1';
+              
+              when f_ioi => -- io@ ( a -- n )
+                io_addr   <= dtos( c_address_width-1 downto 0 );
+                io_re     <= '1';
+                tos_in    <= io_read;
               
               when others =>  -- NOP
                 null;
+                
             end case; -- case( fcode )
         
             ------------------------
@@ -290,7 +309,7 @@ begin
               rpop      <= '1';
               
               pc_load   <= '1';
-              pc_next   <= rtos( pc_next'high downto 0 );
+              pc_next   <= rtos( c_address_width-1 downto 0 );
               stall_i   <= '1';
             end if;
         

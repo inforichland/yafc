@@ -37,6 +37,9 @@ package opcodes is
   constant f_tck : fcode := "10001";		  -- tuck
   constant f_ovr : fcode := "10010";		  -- over
   constant f_equ : fcode := "10011";      -- equals (=)
+  -- I/O bus
+  constant f_ioo : fcode := "10100";      -- IO!
+  constant f_ioi : fcode := "10101";      -- IO@
 
   -- Subcodes (single bit mask in an instruction word)
   constant s_ret : integer range 0 to word'length := 7;

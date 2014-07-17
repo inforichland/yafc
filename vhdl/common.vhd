@@ -2,14 +2,29 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
 package common is
+  -- Constants
   constant c_word_width : integer := 16;
   constant c_word_msb   : integer := c_word_width - 1;
   constant c_stack_size : integer := 32;
   constant c_address_width : integer := 13;
 
+  -- Data types
   subtype word is std_logic_vector( c_word_msb downto 0 );
   subtype address is std_logic_vector( c_address_width-1 downto 0 );
   
+  type io_write_ctrl is record
+    io_addr       : address;
+    io_write      : word;
+    io_we         : std_logic;
+  end record;
+  
+  type io_read_ctrl is record
+    io_addr       : address;
+    io_read       : word;
+    io_re         : std_logic;
+  end record;
+  
+  -- functions
   function or_vector( s : std_logic_vector ) return std_logic;
   function log2( n : natural ) return natural;
 

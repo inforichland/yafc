@@ -21,6 +21,8 @@ class Assembler( object ):
     _TCK_ = '000' + '10001' + '00000000'
     _OVR_ = '000' + '10010' + '00000000'
     _EQU_ = '000' + '10011' + '00000000'
+    _IOO_ = '000' + '10100' + '00000000'
+    _IOI_ = '000' + '10101' + '00000000'
     _NOP_ = '0'*16
 
     _RET_MASK_ = 16-1 - 7
@@ -69,9 +71,6 @@ class Assembler( object ):
         self.code_append( Assembler._OUT_ )
 
     def branch( self, lbl ):
-        #lbladdr = self.labels[ lbl ]
-        #baddr = self._addr2bin( lbladdr )
-        #self.code_append( Assembler._BR_ + baddr )
         self.code_append( Assembler._BR_ + lbl )
     
     def sla( self ):
@@ -81,9 +80,6 @@ class Assembler( object ):
         self.code_append( Assembler._SRA_ )
 
     def branch0( self, lbl ):
-##        lbladdr = self.labels[ lbl ]
-##        baddr = self._addr2bin( lbladdr )
-##        self.code_append( Assembler._0BR_ + baddr )
         self.code_append( Assembler._0BR_ + lbl )
 
     def dup( self ):
@@ -93,9 +89,6 @@ class Assembler( object ):
         self.code_append( Assembler._NOT_ )
 
     def call( self, lbl ):
-##        lbladdr = self.labels[ lbl ]
-##        baddr = self._addr2bin( lbladdr )
-##        self.code_append( Assembler._1BR_ + baddr )
         self.code_append( Assembler._CAL_ + lbl )
 
     def fetch( self, name ):
@@ -148,6 +141,15 @@ class Assembler( object ):
 
     def resw( self, name, addr, word ):
         self.words[ addr ] = ( name, word )
+
+    def io_store( self, addr ): # I/O output
+        self.lit( addr )
+        self.code_append( Assembler._IOO_ )
+        self.code_append( Assembler._DRP_ )
+
+    def io_fetch( self, addr ): # I/O input
+        self.lit( addr )
+        self.code_append( Assembler._IOI_ )
     
     def full_code( self ):
         l = len( self.code )
