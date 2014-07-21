@@ -33,16 +33,39 @@ entity peri_bus is
     io_re         : in std_logic;
     
     -- UART
-    uart_in_regs  : out uart_in_ctrl;
-    uart_out_regs : in uart_out_ctrl;
+    uart_in_regs  : out uart_in_regs_t;
+    uart_out_regs : in uart_out_regs_t;
     
   );
 end peri_bus;
 
 architecture Behavioral of peri_bus is
-
 begin
 
+  -- UART
+  inst_uart : entity work.uart( Behavioral ) 
+  port (
+    clk           => clk,
+    uart_in_regs  => uart_in_regs,
+    uart_out_regs => uart_out_regs,
+    uart_pins     => uart_pins
+  );
+
+  -- I/O space reads
+  process( io_we, io_addr )
+  begin
+    case( io_addr ) is
+    
+      ----------
+      -- UART --
+      ----------
+      
+      when "0000000000000" => io_read <= "000000000000000" & uart_out_regs.busy;
+      when "0000000000001" => io_read <= "00000000" & uart_out_regs.rx_data;
+      when "0000000000010" => io_read <= "
+      
+        
+  end process;
 
 end Behavioral;
 

@@ -3,17 +3,17 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity uart_tx is
-	generic (
-		baud_divider	: integer	-- baud divider for bit clock
+  generic (
+		baud_divider	: integer -- baud_divider for half-bit clock!!!
 	);
-	port (
-		clk				: in	std_logic ;
-		new_data			: in	std_logic ;
-		din				: in	std_logic_vector( 7 downto 0 ) ;
-		dout				: out	std_logic ;
-		busy				: out	std_logic ;
-		done				: out	std_logic 
-	);
+  port (
+    clk         : in  std_logic ;
+    new_data    : in  std_logic ;
+    din         : in  std_logic_vector( 7 downto 0 ) ;
+    dout        : out std_logic ;
+    busy        : out std_logic ;
+    done        : out std_logic 
+  );
 end uart_tx;
 
 architecture Behavioral of uart_tx is
@@ -39,11 +39,11 @@ begin
 			tick <= '0'; -- default value
 		
 			if tick_reset = '1' then
-				tick_counter <= ( others => '0' ) ;
+				tick_counter <= 0 ;
 			else
 				tick_counter <= tick_counter + 1;
 				if tick_counter = to_unsigned( baud_divider, 16 ) then
-					tick_counter <= ( others => '0' ) ;
+					tick_counter <= 0 ;
 					tick <= '1'; -- generate pulse
 				end if ;
 			end if ;
@@ -106,7 +106,7 @@ begin
 				done_i <= '1';
 				busy_i <= '0';
 				tick_reset_i <= '1';
-				dout_i <= 'Z'; -- tri-state
+				dout_i <= '1'; -- hold output pin high while idle
 				
 				if new_data = '1' then
 					next_sr <= din;
@@ -125,17 +125,17 @@ begin
       
       case( state ) is
          
-			when st_idle =>
-            if new_data = '1' then
-               next_state <= st_start;
-            end if;
+        when st_idle =>
+          if new_data = '1' then
+            next_state <= st_start;
+          end if;
 				
          when st_tx =>
-            if bit_counter = "1000" then
-               next_state <= st_stop;
-            end if;
+           if bit_counter = "1000" then
+             next_state <= st_stop;
+           end if;
          
-			when st_start =>
+      when st_start =>
 				if tick = '1' then
 					next_state <= st_tx;
 				end if ;
