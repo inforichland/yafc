@@ -3,18 +3,23 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity uart_rx is
+	generic (
+		baud_divider	: integer -- baud_divider for half-bit clock!!!
+	);
 	port (
-		clk				    : in	std_logic ;
-		din				    : in	std_logic ;
-    uart_in_regs  : in  uart_in_regs_t;
-		uart_out_regs : out uart_out_regs_t
+		clk				: in	std_logic ;
+		din				: in	std_logic ;
+		dout				: out	std_logic_vector( 7 downto 0 ) ;
+		busy				: out	std_logic ;
+		err				: out	std_logic ;
+		done				: out	std_logic
 	);
 end uart_rx;
 
 
 architecture Behavioral of uart_rx is
 	signal bit_counter 	: unsigned( 3 downto 0 ) := ( others => '0' ) ;
-	signal tick_counter	: unsigned( 15 downto 0 ) := ( others => '0' ) ;
+	signal tick_counter	: unsigned( 9 downto 0 ) := ( others => '0' ) ;
 	signal sr				: std_logic_vector( 7 downto 0 ) ; -- 8 data
 	
 	type state_t is ( st_idle, st_start_bit, st_edge, st_midbit, st_sample, st_stop_bit );
@@ -28,7 +33,7 @@ architecture Behavioral of uart_rx is
 	signal busy_i : std_logic := '0';
 	signal err_i : std_logic := '0';
 	
-	signal sample_counter : std_logic_vector( 3 downto 0 ) := "0000";
+	signal oh_sample_counter : std_logic_vector( 3 downto 0 ) := "0000";
 	signal samples : std_logic_vector( 2 downto 0 ) := "000";
 
 begin
@@ -42,7 +47,7 @@ begin
 				tick_counter <= ( others => '0' ) ;
 			else
 				tick_counter <= tick_counter + 1;
-				if tick_counter = to_unsigned( baud_divider, 16 ) then
+				if tick_counter = to_unsigned( baud_divider, 10 ) then
 					tick_counter <= ( others => '0' ) ;
 					tick <= '1'; -- generate pulse
 				end if ;
@@ -112,25 +117,25 @@ begin
 					-- wait for half-bit tick
 					if tick = '1' then
 						state_next <= st_sample;
-						sample_counter <= "0001";
+						oh_sample_counter <= "0001";
 						samples <= "111";
 					end if ;
 
 				-- sample at mid-bit until we get 3 samples in a row that match
 				when st_sample =>
 					busy_i <= '1';
-					if sample_counter = "1000" then
+					if oh_sample_counter = "1000" then
 						if( samples = "000" ) or ( samples = "111" ) then
 							sr <= samples( 0 ) & sr( sr'high downto 1 ) ;	-- shift in the new bit (LSB first)
 							bit_counter <= bit_counter + 1;
 							state_next <= st_edge;
-							sample_counter <= "0000";
+							oh_sample_counter <= "0000";
 						else
-							sample_counter <= "0001";
+							oh_sample_counter <= "0001";
 						end if ;
 					else
 						samples <= din & samples( 2 downto 1 ); -- shift in new sample
-						sample_counter <= sample_counter( 2 downto 0 ) & "0";
+						oh_sample_counter <= oh_sample_counter( 2 downto 0 ) & "0";
 					end if ;
 					
 
