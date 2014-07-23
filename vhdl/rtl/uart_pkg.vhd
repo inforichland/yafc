@@ -38,28 +38,18 @@ package uart_pkg is
     tx    : std_logic;
   end record;
   
-  -- input pins to peripheral bus
-  type peri_in_pins_t is record
-    uart_in_pins    : uart_in_pins_t;
-  end record;
-  
-  -- output pins from peripheral bus
-  type peri_out_pins_t is record
-    uart_out_pins   : uart_out_pins_t;
-  end record;
-  
   ---------------
   -- Constants --
   ---------------
   
-  constant uart_in_regs_reset   : uart_in_regs_t  := ( start      => '0',
-                                                       tx_data    => ( others => '0' );
+  --constant uart_in_regs_reset   : uart_in_regs_t  := ( start      => '0',
+  --                                                     tx_data    => ( others => '0' ) );
   
-  constant uart_out_regs_reset  : uart_out_regs_t := ( rx_busy    => '0',
-                                                       tx_busy    => '0',
-                                                       rx_data    => ( others => '0' );
-                                                       done       => '0',
-                                                       err        => '0' );
+  --constant uart_out_regs_reset  : uart_out_regs_t := ( rx_busy    => '0',
+  --                                                     tx_busy    => '0',
+  --                                                     rx_data    => ( others => '0' ),
+  --                                                     done       => '0',
+  --                                                     err        => '0' );
                                                      
 end uart_pkg;
 

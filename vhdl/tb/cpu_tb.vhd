@@ -17,12 +17,12 @@ ARCHITECTURE test OF yafc_tb IS
   --Inputs
   signal clk : std_logic := '0';
   signal rst_n : std_logic := '0';
+  signal rx : std_logic := '1';
 
   -- outputs
-  signal o_out : word;
-  signal o_strobe : std_logic;
   signal tos, nos : word;
   signal pc, insn : word;
+  signal tx : std_logic;
   
   -- Clock period definitions
   constant clk_period : time := 10 ns;
@@ -35,8 +35,8 @@ BEGIN
   uut: entity work.yafc( structural ) PORT MAP (
     clk => clk,
     rst_in => rst_n,
-    o_out => o_out,
-    o_strobe => o_strobe,
+    tx => tx,
+    rx => rx,
     o_debug_1 => tos,
     o_debug_2 => nos,
     o_debug_3 => pc,
@@ -44,19 +44,6 @@ BEGIN
     );
 
   clk <= '0' when done else not clk after clk_period / 2;
-
-  process
-    variable l : line;
-  begin
-    wait until o_strobe'event;
-    if o_strobe = '1' then
-      write( l, string'( "o_out: " ) );
-      write( l, o_out );
-      write( l, string'( ",  " ) );
-      write( l, integer'image( to_integer( unsigned( o_out ) ) ) );
-      writeline( output, l );
-    end if;
-  end process;
     
 --    process( tos, nos )
 --        variable l : line;
@@ -82,7 +69,8 @@ BEGIN
     rst_n <= '1';
 
     
-    wait for clk_period*200;
+    --wait for clk_period*1000;
+    wait for 1000 us;
 
     
     done <= true;

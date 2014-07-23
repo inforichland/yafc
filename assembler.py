@@ -4,7 +4,7 @@ class Assembler( object ):
     _CAL_ = '011'
     _ADD_ = '000' + '00001' + '00000000'
     _SUB_ = '000' + '00010' + '00000000'
-    _OUT_ = '000' + '00011' + '00000000'
+#    _OUT_ = '000' + '00011' + '00000000'
     _SLA_ = '000' + '00100' + '00000000'
     _SRA_ = '000' + '00101' + '00000000'
     _DUP_ = '000' + '00110' + '00000000'
@@ -67,8 +67,8 @@ class Assembler( object ):
     def sub( self ):
         self.code_append( Assembler._SUB_ )
 
-    def out( self ):
-        self.code_append( Assembler._OUT_ )
+#    def out( self ):
+#        self.code_append( Assembler._OUT_ )
 
     def branch( self, lbl ):
         self.code_append( Assembler._BR_ + lbl )
@@ -172,9 +172,9 @@ class Assembler( object ):
         for i in xrange( 1, 2**self.addr_width ):
             if i < l and fcode[ i ][ :3 ] in jumpin_major_codes:
                 label = self.labels[ fcode[ i ][ 3: ] ]
-                label = bin( label )[ 2: ].rjust( 13, '0' )
-                fcode[ i ] = fcode[ i ][ :3 ] + label
-                print fcode[ i ][ :3 ], label, i
+                label1 = bin( label )[ 2: ].rjust( 13, '0' )
+                fcode[ i ] = fcode[ i ][ :3 ] + label1
+                print fcode[ i ][ :3 ], label1, i, label
             elif self.words.has_key( i ):
                 word = bin( self.words[ i ][ 1 ] )[ 2: ].rjust( 16, '0' )
                 fcode.append( word )
@@ -186,37 +186,57 @@ class Assembler( object ):
         with open( filename, 'w' ) as f:
             for i in self.full_code():
                 print >>f, i
-    
+
+
 def looper():
+    # constants
+    _UART_START_ADDR = 0
+    _UART_TX_DATA_ADDR = 1
+    _UART_TX_BUSY_ADDR = 1    
+        
     a = Assembler()
     a.resw( 'count', 0x3ff, 10 )
     a.nop()
 
     # beginning of loop
-    a.label( 'loop' )
-    a.fetch( 'count' )
+    a.label( 'loop' )       
+    a.fetch( 'count' )      # load count from memory   ( -- n )
 
-    a.call( 'sub1&out' )
+    a.call( 'sub1&out' )    # call sub1&out ( -- n-1 )
 
-    a.dup()
-    a.store( 'count' )
-    a.lit( 0 )
-    a.equal()
+    a.dup()                 # ( -- n-1 n-1 )
+    a.store( 'count' )      # ( -- n-1 )
+    a.lit( 0 )              # ( -- n-1 0 )
+    a.equal()               # ( -- t/f )
     a.branch0( 'loop' )
     #end of loop
 
     # done with loop, run word 'hang,' which sits in an infinite loop
     a.call( 'hang' )
 
-    # word 'sub1&out', which subtracts 1 and outputs to I/O
-    a.label( 'sub1&out' )
+    # word uart_tx, which outputs a byte to the UART and waits for it to finish TXing
+    a.label( 'uart_tx' )    # ( n -- )
+    a.io_store( _UART_TX_DATA_ADDR )
     a.lit( 1 )
-    a.sub()
-    a.out()
+    a.io_store( _UART_START_ADDR )
+    # loop waiting for the TX to finish
+    a.label( 'tx_wait_loop' )
+    a.io_fetch( _UART_TX_BUSY_ADDR )
+    a.lit(0)
+    a.equal()
+    a.branch0( 'tx_wait_loop' )
     a.ret()
 
-    # word 'hang' which is an infinite loop of NOP
-    a.label( 'hang' )
+    # word 'sub1&out', which subtracts 1 and outputs to I/O
+    a.label( 'sub1&out' )   # ( n -- n-1 )
+    a.lit( 1 )              # ( n 1 )
+    a.sub()                 # ( n-1 )
+    a.dup()                 # ( n-1 n-1 )
+    a.call( 'uart_tx' )     # ( n-1 n-1 -- n-1 )
+    a.ret()                 # return from subroutine
+
+    # word 'hang' which is an infinite loop of nothing
+    a.label( 'hang' )       # ( -- )
     a.branch( 'hang' )
             
     return a

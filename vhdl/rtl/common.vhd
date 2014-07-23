@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
+use work.uart_pkg.all;
+
 package common is
   -- Constants
   constant c_word_width : integer := 16;
@@ -23,6 +25,16 @@ package common is
     io_read       : word;
     io_re         : std_logic;
   end record;
+
+  -- input pins to peripheral bus
+  type peri_in_pins_t is record
+    uart_in_pins    : uart_in_pins_t;
+  end record;
+  
+  -- output pins from peripheral bus
+  type peri_out_pins_t is record
+    uart_out_pins   : uart_out_pins_t;
+  end record;
   
   -- functions
   function or_vector( s : std_logic_vector ) return std_logic;
@@ -41,6 +53,7 @@ end common;
 
 package body common is
 
+  -- OR reduction of a vector
   function or_vector( s : std_logic_vector ) return std_logic is
     variable res : std_logic := '0';
   begin
@@ -50,6 +63,7 @@ package body common is
     return res;
   end function or_vector;
 
+  -- log base 2 of 'n'
   function log2( n : natural ) return natural is
     variable a : natural := n;
     variable log : natural := 0;

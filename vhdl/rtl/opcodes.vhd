@@ -17,10 +17,12 @@ package opcodes is
   constant m_0bra : mcode := "10";
   constant m_call : mcode := "11";
 
+  -- TODO: reorganize these
   subtype fcode is std_logic_vector( 4 downto 0 );
+  constant f_nop : fcode := "00000";    -- NOP
   constant f_add : fcode := "00001";       -- +
   constant f_sub : fcode := "00010";       -- -
-  constant f_out : fcode := "00011";       -- output port
+--  constant f_out : fcode := "00011";       -- output port
   constant f_sla : fcode := "00100";       -- 2* (arithmetic)
   constant f_sra : fcode := "00101";       -- 2/ (arithmetic)
   constant f_dup : fcode := "00110";       -- dup
