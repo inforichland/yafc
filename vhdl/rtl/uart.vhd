@@ -62,7 +62,7 @@ begin
     regs_out.rx_err  <= rx_err;
 
     -- input pins
-    rx_din      <= pins_in.rx;
+    rx_din <= pins_in.rx;
 
     -- output pins
     pins_out.tx <= tx_dout;

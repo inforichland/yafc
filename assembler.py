@@ -182,11 +182,46 @@ class Assembler( object ):
                 fcode.append( Assembler._NOP_ )
         return fcode
 
-    def write_code_file( self, filename ):
+    def write_code_file( self, filename, is_mif=False ):
         with open( filename, 'w' ) as f:
-            for i in self.full_code():
-                print >>f, i
+            if is_mif:
+                print >>f, 'DEPTH = 8192;'
+                print >>f, 'WIDTH = 16;'
+                print >>f, 'ADDRESS_RADIX=DEC;'
+                print >>f, 'DATA_RADIX=BIN;'
+                print >>f, 'CONTENT'
+                print >>f, 'BEGIN'
+            for i, val in enumerate(self.full_code()):
+                if is_mif:
+                    print >>f, i, ' : ', val, ';'
+                else:
+                    print >>f, val
+            if is_mif:
+                print >>f, 'END;'
 
+def gpio_test():
+    # constants
+    _GPIO_OUT_ADDR = 0x10
+    _GPIO_IN_ADDR = 0x10
+
+    a = Assembler()
+    a.nop()
+
+    # main loop
+    a.label('loop')
+    a.io_fetch(_GPIO_IN_ADDR)
+    a.branch0('opposite')
+
+    a.lit(0x55)
+    a.io_store(_GPIO_OUT_ADDR)
+    a.branch('loop')
+
+    a.label('opposite')
+    a.lit(0xAA)
+    a.io_store(_GPIO_OUT_ADDR)
+    a.branch('loop')
+
+    return a    
 
 def looper():
     # constants

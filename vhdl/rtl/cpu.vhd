@@ -11,11 +11,8 @@ entity yafc is
         -- peripheral pins
         tx        : out std_logic;
         rx        : in  std_logic;
-        -- debug "pins"
-        o_debug_1 : out word;
-        o_debug_2 : out word;
-        o_debug_3 : out word;
-        o_debug_4 : out word
+        gpio_in  : in  word;
+        gpio_out : out word
         );
 end entity;
 
@@ -66,11 +63,6 @@ begin
     --  - Implement Forth! :-)
     ----------------------------------------------------------------------
 
-    -- debug outputs
-    o_debug_1 <= dtos;
-    o_debug_2 <= dnos;
-    o_debug_3 <= "000" & pc;
-    o_debug_4 <= insn;
 
     -- async assert, sync deassert
     --reset_conditioner : entity work.reset( Behavioral )
@@ -86,6 +78,8 @@ begin
     rst_n                   <= rst_in;
     pins_in.uart_in_pins.rx <= rx;
     tx                      <= pins_out.uart_out_pins.tx;
+    pins_in.gpio_in_pins.input <= gpio_in;
+    gpio_out                   <= pins_out.gpio_out_pins.output;
 
     ---------------------------------------------------------------------------
     -- Peripheral bus

@@ -180,16 +180,22 @@
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="ReadyToRun"/>
     </transform>
-    <transform xil_pn:end_ts="1406137311" xil_pn:in_ck="1921279802467886460" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-9117595325848036098" xil_pn:start_ts="1406137295">
+    <transform xil_pn:end_ts="1406153585" xil_pn:in_ck="-9022391446826011313" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="-9117595325848036098" xil_pn:start_ts="1406153561">
       <status xil_pn:value="SuccessfullyRun"/>
       <status xil_pn:value="WarningsGenerated"/>
       <status xil_pn:value="ReadyToRun"/>
-      <status xil_pn:value="OutOfDateForInputs"/>
-      <status xil_pn:value="OutOfDateForOutputs"/>
-      <status xil_pn:value="InputChanged"/>
-      <status xil_pn:value="InputRemoved"/>
-      <status xil_pn:value="OutputChanged"/>
-      <status xil_pn:value="OutputRemoved"/>
+      <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
+      <outfile xil_pn:name="webtalk_pn.xml"/>
+      <outfile xil_pn:name="xst"/>
+      <outfile xil_pn:name="yafc.lso"/>
+      <outfile xil_pn:name="yafc.ngc"/>
+      <outfile xil_pn:name="yafc.ngr"/>
+      <outfile xil_pn:name="yafc.prj"/>
+      <outfile xil_pn:name="yafc.stx"/>
+      <outfile xil_pn:name="yafc.syr"/>
+      <outfile xil_pn:name="yafc.xst"/>
+      <outfile xil_pn:name="yafc_tb_beh.prj"/>
+      <outfile xil_pn:name="yafc_xst.xrpt"/>
     </transform>
   </transforms>
 

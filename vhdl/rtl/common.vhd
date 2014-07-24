@@ -2,6 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
 use work.uart_pkg.all;
+use work.gpio_pkg.all;
 
 package common is
   -- Constants
@@ -29,11 +30,13 @@ package common is
   -- input pins to peripheral bus
   type peri_in_pins_t is record
     uart_in_pins    : uart_in_pins_t;
+    gpio_in_pins    : gpio_in_pins_t;
   end record;
   
   -- output pins from peripheral bus
   type peri_out_pins_t is record
     uart_out_pins   : uart_out_pins_t;
+    gpio_out_pins   : gpio_out_pins_t;
   end record;
   
   -- functions
