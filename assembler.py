@@ -206,6 +206,61 @@ _UART_START_ADDR = 0
 _UART_TX_DATA_ADDR = 1
 _UART_TX_BUSY_ADDR = 1    
 
+def blinky_test():
+    a=Assembler()
+    a.resw( 'count', 0x100, 0 )
+    a.nop()
+
+    a.label('loop')
+    a.lit(32000)            # ( n )
+    a.label('busy_wait')
+    a.call('dec')
+    a.dup()                 # ( n-1 n-1 )
+    a.branch0('incr')       # ( n-1 )
+    a.branch('busy_wait')
+
+    ## words ##
+
+    # increment ( n -- n+1 )
+    a.label('inc')
+    a.lit(1)
+    a.add()
+    a.ret()
+
+    # decrement ( n -- n-1 )
+    a.label('dec')
+    a.lit(1)
+    a.sub()
+    a.ret()
+
+    # wrap256   ( n -- n )
+    a.label('wrap256')
+    a.dup()         # ( n n )
+    a.lit(256)      # ( n n 256 )
+    a.equal()       # ( n t/f )
+    a.branch0('_1') # ( n )
+    a.drop()        # ()
+    a.lit(0)        # ( 0 )
+    a.label('_1')   # ( n )
+    a.ret()
+
+    ## end words ##
+
+    # increment count and write its value to the GPIO pins
+    a.label('incr')
+    a.drop()                # ( -- )
+    a.fetch('count')        # ( n )
+    a.call('inc')           # ( n+1 )
+    a.call('wrap256')       # ( n+1%256 )
+    a.dup()                 # ( n n )
+    a.store('count')        # ( n )
+    
+    # expects to get here with just n+1 on stack
+    a.io_store(_GPIO_OUT_ADDR)
+    a.branch('loop')
+
+    return a
+
 def uart_tx_test():
     a=Assembler()
     a.nop()

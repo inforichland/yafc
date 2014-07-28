@@ -29,12 +29,12 @@ architecture Behavioral of uart is
     signal   tx_sr       : std_logic_vector(9 downto 0) := (others => '1');
     signal   tx_bitcount : integer range 0 to 10        := 10;
     signal   tx_divider  : integer range 0 to DIVIDER   := DIVIDER;
-    signal   tx_data     : std_logic_vector(7 downto 0) := (others => '0');
+    signal   tx_data     : byte                         := (others => '0');
     signal   tx_busy_reg : std_logic;
     signal   tx_busy_i   : std_logic;
     -- RX signals
     signal   sample_sr   : std_logic_vector(3 downto 0) := "0000";
-    signal   rx_sr       : std_logic_vector(7 downto 0) := (others => '0');
+    signal   rx_sr       : byte                         := (others => '0');
     signal   rx_bitcount : integer range 0 to 9         := 9;
     signal   rx_divider  : integer range 0 to DIVIDER;
     signal   rx          : std_logic;
@@ -88,7 +88,7 @@ begin
                 tx_bitcount <= 0;                    -- set up bit counter
             else
                 if (tx_divider /= DIVIDER) then
-                    tx_divider <= tx_divider + 1;        -- divide the clock
+                    tx_divider <= tx_divider + 1;    -- divide the clock
                 else
                     if (tx_bitcount /= 10) then
                         tx_divider  <= 0;

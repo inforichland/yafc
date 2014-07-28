@@ -23,9 +23,6 @@ package uart_pkg is
     rx_busy   : std_logic;
     tx_busy   : std_logic;
     rx_data   : byte;
---    tx_done   : std_logic;
---    rx_done   : std_logic;
---    rx_err    : std_logic;
   end record;
   
   -- Pins in to UART
@@ -38,19 +35,6 @@ package uart_pkg is
     tx    : std_logic;
   end record;
   
-  ---------------
-  -- Constants --
-  ---------------
-  
-  --constant uart_in_regs_reset   : uart_in_regs_t  := ( start      => '0',
-  --                                                     tx_data    => ( others => '0' ) );
-  
-  --constant uart_out_regs_reset  : uart_out_regs_t := ( rx_busy    => '0',
-  --                                                     tx_busy    => '0',
-  --                                                     rx_data    => ( others => '0' ),
-  --                                                     done       => '0',
-  --                                                     err        => '0' );
-                                                     
 end uart_pkg;
 
 package body uart_pkg is

@@ -1,14 +1,5 @@
--- Quartus II VHDL Template
--- True Dual-Port RAM with single clock
---
+-- Based on the Quartus II VHDL Template for True Dual-Port RAM with single clock
 -- Read-during-write on port A or B returns newly written data
--- 
--- Read-during-write between A and B returns either new or old data depending
--- on the order in which the simulator executes the process statements.
--- Quartus II will consider this read-during-write scenario as a 
--- don't care condition to optimize the performance of the RAM.  If you
--- need a read-during-write between ports to return the old data, you
--- must instantiate the altsyncram Megafunction directly.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -19,23 +10,21 @@ use std.textio.all;
 
 entity dpram is
 
-  generic 
-    (
+  generic(
       g_data_width    : natural := 16;
       g_addr_width    : natural := 10;
       g_init          : boolean := false;
       g_init_file     : string  := ""
       );
 
-  port 
-    (
+  port(
       clk		: in std_logic;
       addr_a	: in std_logic_vector( g_addr_width-1 downto 0 );
       addr_b	: in std_logic_vector( g_addr_width-1 downto 0 );
       data_a	: in std_logic_vector((g_data_width-1) downto 0);
       data_b	: in std_logic_vector((g_data_width-1) downto 0);
-      we_a	: in std_logic := '1';
-      we_b	: in std_logic := '1';
+      we_a	    : in std_logic := '1';
+      we_b	    : in std_logic := '1';
       q_a		: out std_logic_vector((g_data_width -1) downto 0);
       q_b		: out std_logic_vector((g_data_width -1) downto 0)
       );
@@ -72,30 +61,32 @@ architecture rtl of dpram is
   shared variable ram : ram_t := init_ram( g_init_file );
 
 begin
-  -- Port A
-  process(clk)
-    variable addr : natural range 0 to 2**g_addr_width-1;
-  begin
-    if(rising_edge(clk)) then 
-      addr := to_integer( unsigned( addr_a ) );
-      if(we_a = '1') then
-        ram(addr) := data_a;
-      end if;
-      q_a <= ram(addr);
-    end if;
-  end process;
+    -- Port A
+    process (clk)
+        variable addr : natural range 0 to 2**g_addr_width-1;
+    begin
+        if (rising_edge(clk)) then 
+            addr := to_integer( unsigned( addr_a ) );
+            if (we_a = '1') then
+                ram(addr) := data_a;
+            end if;
+            
+            q_a <= ram(addr);
+        end if;
+    end process;
 
-  -- Port B 
-  process(clk)
-    variable addr : natural range 0 to 2**g_addr_width-1;
-  begin
-    if(rising_edge(clk)) then 
-      addr := to_integer( unsigned( addr_b ) );
-      if(we_b = '1') then
-        ram(addr) := data_b;
-      end if;
-      q_b <= ram(addr);
-    end if;
-  end process;
+    -- Port B 
+    process (clk)
+        variable addr : natural range 0 to 2**g_addr_width-1;
+    begin
+        if (rising_edge(clk)) then 
+            addr := to_integer( unsigned( addr_b ) );
+            if (we_b = '1') then
+                ram(addr) := data_b;
+            end if;
+            
+            q_b <= ram(addr);
+        end if;
+    end process;
 
 end rtl;
