@@ -18,11 +18,11 @@ ARCHITECTURE test OF yafc_tb IS
   signal clk : std_logic := '0';
   signal rst_n : std_logic := '0';
   signal rx : std_logic := '1';
+  signal gpio_in : word := ( others => '0' );
 
   -- outputs
-  signal tos, nos : word;
-  signal pc, insn : word;
   signal tx : std_logic;
+  signal gpio_out : word;
   
   -- Clock period definitions
   constant clk_period : time := 10 ns;
@@ -37,10 +37,8 @@ BEGIN
     rst_in => rst_n,
     tx => tx,
     rx => rx,
-    o_debug_1 => tos,
-    o_debug_2 => nos,
-    o_debug_3 => pc,
-    o_debug_4 => insn
+    gpio_in => gpio_in,
+    gpio_out => gpio_out
     );
 
   clk <= '0' when done else not clk after clk_period / 2;

@@ -1,22 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    22:28:35 07/16/2014 
--- Design Name: 
--- Module Name:    uart - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
-----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -24,9 +5,15 @@ use work.common.all;
 use work.uart_pkg.all;
 
 entity uart is
+    generic (
+        CLOCK_FREQ : integer;
+        BAUD       : integer
+        );
     port (
+        -- control
         clk      : in  std_logic;
         rst_n    : in  std_logic;
+        -- Peripheral bus signals
         regs_in  : in  uart_in_regs_t;
         regs_out : out uart_out_regs_t;
         pins_in  : in  uart_in_pins_t;
@@ -35,63 +22,106 @@ entity uart is
 end uart;
 
 architecture Behavioral of uart is
-    signal in_regs  : uart_in_regs_t;
-    signal out_regs : uart_out_regs_t;
-    signal pins_i   : uart_in_pins_t;
-    signal pins_o   : uart_out_pins_t;
-
-    signal rx_din, rx_busy, rx_err, rx_done       : std_logic := '0';  -- RX signals
-    signal tx_new_data, tx_dout, tx_busy, tx_done : std_logic := '0';  -- TX signals
-    signal rx_dout, tx_din                        : byte      := (others => '0');  -- byte-wide signals
+    -- constants
+    constant DIVIDER     : integer                      := (CLOCK_FREQ / BAUD) - 1;
+    -- TX signals
+    signal   strobe      : std_logic;
+    signal   tx_sr       : std_logic_vector(9 downto 0) := (others => '1');
+    signal   tx_bitcount : integer range 0 to 10        := 10;
+    signal   tx_divider  : integer range 0 to DIVIDER   := DIVIDER;
+    signal   tx_data     : std_logic_vector(7 downto 0) := (others => '0');
+    signal   tx_busy_reg : std_logic;
+    signal   tx_busy_i   : std_logic;
+    -- RX signals
+    signal   sample_sr   : std_logic_vector(3 downto 0) := "0000";
+    signal   rx_sr       : std_logic_vector(7 downto 0) := (others => '0');
+    signal   rx_bitcount : integer range 0 to 9         := 9;
+    signal   rx_divider  : integer range 0 to DIVIDER;
+    signal   rx          : std_logic;
+    signal   rx_busy_reg : std_logic;
+    signal   rx_busy_i   : std_logic;
 begin
 
     ---------------------------------------------------------------------------
-    -- Assign inputs & outputs
+    -- Peripheral bus connections
     ---------------------------------------------------------------------------
 
-    -- inputs
-    tx_new_data <= regs_in.start;
-    tx_din      <= regs_in.tx_data;
+    -- Assign register inputs
+    strobe  <= regs_in.start;
+    tx_data <= regs_in.tx_data;
 
-    -- outputs
-    regs_out.rx_busy <= rx_busy;
-    regs_out.tx_busy <= tx_busy;
-    regs_out.rx_data <= rx_dout;
-    regs_out.tx_done <= tx_done;
-    regs_out.rx_done <= rx_done;
-    regs_out.rx_err  <= rx_err;
+    -- Assign register outputs
+    regs_out.rx_busy <= rx_busy_reg;
+    regs_out.tx_busy <= tx_busy_reg;
+    regs_out.rx_data <= rx_sr;
 
-    -- input pins
-    rx_din <= pins_in.rx;
+    -- inputs pins
+    rx <= pins_in.rx;
 
     -- output pins
-    pins_out.tx <= tx_dout;
+    pins_out.tx <= tx_sr(0);
 
     ---------------------------------------------------------------------------
-    -- Receive side
+    -- UART logic
     ---------------------------------------------------------------------------
-    rx_inst : entity work.uart_rx(Behavioral)
-        port map (
-            clk   => clk,
-            rst_n => rst_n,
-            din   => rx_din,
-            dout  => rx_dout,
-            busy  => rx_busy,
-            err   => rx_err,
-            done  => rx_done
-            );
 
-    ---------------------------------------------------------------------------
-    -- Transmitter
-    ---------------------------------------------------------------------------
-    tx_inst : entity work.uart_tx(Behavioral)
-        port map (
-            clk      => clk,
-            new_data => tx_new_data,
-            din      => tx_din,
-            dout     => tx_dout,
-            busy     => tx_busy,
-            done     => tx_done
-            );
+    -- create registers for busy signals
+    regs_proc : process (clk)
+    begin  -- process regs_proc
+        if rising_edge(clk) then
+            tx_busy_reg <= tx_busy_i;
+            rx_busy_reg <= rx_busy_i;
+        end if;
+    end process regs_proc;
+
+    -- comnbinational logic for 'busy' signals
+    tx_busy_i <= '1' when (strobe = '1' or tx_bitcount /= 10) else '0';
+    rx_busy_i <= '1' when (rx_bitcount /= 9)                  else '0';
+
+    -- TX process
+    TX_PROC : process(clk)
+    begin
+        if rising_edge(clk) then
+            if (strobe = '1') then
+                tx_sr       <= "1" & tx_data & "0";  -- set up data
+                tx_divider  <= 0;                    -- set up clock divider
+                tx_bitcount <= 0;                    -- set up bit counter
+            else
+                if (tx_divider /= DIVIDER) then
+                    tx_divider <= tx_divider + 1;        -- divide the clock
+                else
+                    if (tx_bitcount /= 10) then
+                        tx_divider  <= 0;
+                        tx_bitcount <= tx_bitcount + 1;
+                        tx_sr       <= "1" & tx_sr(9 downto 1);
+                    end if;
+                end if;
+            end if;
+        end if;
+    end process TX_PROC;
+
+    -- RX process
+    RX_PROC : process(clk)
+    begin
+        if rising_edge(clk) then
+            sample_sr <= sample_sr(2 downto 0) & rx;  -- read incoming sample
+            if (rx_bitcount /= 9) then
+                if (rx_divider /= DIVIDER) then
+                    rx_divider <= rx_divider + 1;
+                elsif (sample_sr = "1111" or sample_sr = "0000") then
+                    rx_divider  <= 0;
+                    rx_bitcount <= rx_bitcount + 1;
+                    rx_sr       <= sample_sr(3) & rx_sr(7 downto 1);
+                end if;
+            else
+                if (sample_sr = "1100") then          -- start bit
+                                                      -- starting the count at halfway through a bit period
+                                                      -- will align the sampling to the middle of the bit period
+                    rx_divider  <= DIVIDER / 2;
+                    rx_bitcount <= 0;
+                end if;
+            end if;
+        end if;
+    end process RX_PROC;
 
 end Behavioral;

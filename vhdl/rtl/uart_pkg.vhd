@@ -23,9 +23,9 @@ package uart_pkg is
     rx_busy   : std_logic;
     tx_busy   : std_logic;
     rx_data   : byte;
-    tx_done   : std_logic;
-    rx_done   : std_logic;
-    rx_err    : std_logic;
+--    tx_done   : std_logic;
+--    rx_done   : std_logic;
+--    rx_err    : std_logic;
   end record;
   
   -- Pins in to UART

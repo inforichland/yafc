@@ -6,7 +6,7 @@
 -- Author     : Tim Wawrzynczak
 -- Company    : 
 -- Created    : 2014-07-23
--- Last update: 2014-07-24
+-- Last update: 2014-07-28
 -- Platform   : 
 -- Standard   : VHDL'93
 -------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ begin
     -- the point of view of the peripheral.  Those data types flow in and
     -- out of the peripheral, and out and in to the bus.
     ---------------------------------------------------------------------------
-    
+
     ---------------------------------------------------------------------------
     -- Assign inputs & outputs
     ---------------------------------------------------------------------------
@@ -77,6 +77,9 @@ begin
     -------------------------------------------------------------------------------
 
     inst_uart : entity work.uart(Behavioral)
+        generic map (
+            CLOCK_FREQ => 100000000,
+            BAUD       => 115200)
         port map (
             clk      => clk,
             rst_n    => rst_n,
@@ -119,18 +122,18 @@ begin
                 when "0000000000000" => io_read_i <= "000000000000000" & uart_out_regs.rx_busy;
                 when "0000000000001" => io_read_i <= "000000000000000" & uart_out_regs.tx_busy;
                 when "0000000000010" => io_read_i <= "00000000" & uart_out_regs.rx_data;
-                when "0000000000011" => io_read_i <= "000000000000000" & uart_out_regs.tx_done;
-                when "0000000000100" => io_read_i <= "000000000000000" & uart_out_regs.rx_done;
-                when "0000000000101" => io_read_i <= "000000000000000" & uart_out_regs.rx_err;
+--                when "0000000000011" => io_read_i <= "000000000000000" & uart_out_regs.tx_done;
+--                when "0000000000100" => io_read_i <= "000000000000000" & uart_out_regs.rx_done;
+--                when "0000000000101" => io_read_i <= "000000000000000" & uart_out_regs.rx_err;
 
-                ----------
-                -- GPIO --
-                ----------
+                                        ----------
+                                        -- GPIO --
+                                        ----------
                 when "0000000010000" => io_read_i <= "000000000000000" & gpio_out_regs.output(0);
 
-                -- Default value
+                                        -- Default value
                 when others => io_read_i <= (others => '0');
-                                        
+                               
             end case;  -- io_addr
         end if;  -- io_re = '1'
     end process io_reads;
@@ -154,14 +157,14 @@ begin
                     when "0000000000000" => uart_in_regs.start   <= io_write(0);
                     when "0000000000001" => uart_in_regs.tx_data <= io_write(7 downto 0);
 
-                    ----------
-                    -- GPIO --
-                    ----------
+                                        ----------
+                                        -- GPIO --
+                                        ----------
 
                     when "0000000010000" => gpio_in_regs.input <= io_write;
 
-                    -- Do nothing for other addresses
-                    when others          => null;
+                                        -- Do nothing for other addresses
+                    when others => null;
                                             
                 end case;
             end if;  -- io_we = '1'

@@ -102,7 +102,7 @@ class Assembler( object ):
         self.code_append( Assembler._STR_ )
         self.code_append( Assembler._DRP_ )
 
-    def drop( self, addr ):
+    def drop( self ):
         self.code_append( Assembler._DRP_ )
 
     def rtd( self ):
@@ -199,11 +199,52 @@ class Assembler( object ):
             if is_mif:
                 print >>f, 'END;'
 
-def gpio_test():
-    # constants
-    _GPIO_OUT_ADDR = 0x10
-    _GPIO_IN_ADDR = 0x10
+# constants
+_GPIO_OUT_ADDR = 0x10
+_GPIO_IN_ADDR = 0x10
+_UART_START_ADDR = 0
+_UART_TX_DATA_ADDR = 1
+_UART_TX_BUSY_ADDR = 1    
 
+def uart_tx_test():
+    a=Assembler()
+    a.nop()
+    # main loop
+    a.label('loop')
+    a.io_fetch(_UART_TX_BUSY_ADDR)
+    a.branch0('uart_tx')
+    a.branch('loop')
+
+    # TX a byte and wait for it to finish
+    a.label( 'uart_tx' )
+
+    # first do a little busy-wait
+    a.lit(500)
+    a.label('busy_wait')
+    a.lit(1)
+    a.sub()
+    a.dup()
+    a.branch0('go')
+    a.branch('busy_wait')
+
+    a.label('go')
+    a.drop()
+    a.lit(65)
+    a.io_store( _UART_TX_DATA_ADDR )
+    a.lit( 1 )
+    a.io_store( _UART_START_ADDR )
+    # loop waiting for the TX to finish
+    a.label( 'tx_wait_loop' )
+    a.io_fetch( _UART_TX_BUSY_ADDR )
+    a.lit(0)
+    a.equal()
+    a.branch0( 'tx_wait_loop' )
+    a.branch('loop')
+
+    return a
+    
+
+def gpio_test():
     a = Assembler()
     a.nop()
 
@@ -224,10 +265,7 @@ def gpio_test():
     return a    
 
 def looper():
-    # constants
-    _UART_START_ADDR = 0
-    _UART_TX_DATA_ADDR = 1
-    _UART_TX_BUSY_ADDR = 1    
+
         
     a = Assembler()
     a.resw( 'count', 0x3ff, 10 )
