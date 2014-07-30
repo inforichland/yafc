@@ -199,12 +199,53 @@ class Assembler( object ):
             if is_mif:
                 print >>f, 'END;'
 
-# constants
-_GPIO_OUT_ADDR = 0x10
-_GPIO_IN_ADDR = 0x10
-_UART_START_ADDR = 0
-_UART_TX_DATA_ADDR = 1
-_UART_TX_BUSY_ADDR = 1    
+# GPIO I/O space addresses
+_GPIO_OUT_ADDR = 0x10       # write
+_GPIO_IN_ADDR = 0x10        # read
+# UART I/O space addresses
+_UART_START_ADDR = 0        # write
+_UART_TX_DATA_ADDR = 1      # write
+_UART_RX_BUSY_ADDR = 0      # read
+_UART_TX_BUSY_ADDR = 1      # read
+_UART_RX_DATA_ADDR = 2      # read
+
+def uart_echo_test():
+    a=Assembler()
+    a.nop()
+
+    # main loop
+    a.call('rx_wait')
+
+    # words
+
+    # tx_byte           ( n -- )
+    a.label('tx_byte')
+    a.io_store(_UART_TX_DATA_ADDR)
+    a.lit(1)
+    a.io_store(_UART_START_ADDR)
+    a.label('_1')
+    a.io_fetch(_UART_TX_BUSY_ADDR)
+    a.lit(0)
+    a.equal()
+    a.branch0('_1')
+    a.ret()    
+
+    # wait for RX Busy to go high
+    a.label('rx_wait')
+    a.io_fetch(_UART_RX_BUSY_ADDR)
+    a.lit(1)
+    a.equal()
+    a.branch0('rx_wait')
+    # wait for RX busy to go low
+    a.label('_1')
+    a.io_fetch(_UART_RX_BUSY_ADDR)
+    a.lit(0)
+    a.equal()
+    a.branch0('_1')
+    a.io_fetch(_UART_RX_DATA_ADDR)
+    a.ret()
+    
+    return a
 
 def blinky_test():
     a=Assembler()
@@ -264,36 +305,49 @@ def blinky_test():
 def uart_tx_test():
     a=Assembler()
     a.nop()
-    # main loop
-    a.label('loop')
-    a.io_fetch(_UART_TX_BUSY_ADDR)
-    a.branch0('uart_tx')
     a.branch('loop')
 
-    # TX a byte and wait for it to finish
-    a.label( 'uart_tx' )
+    ## words ##
 
-    # first do a little busy-wait
-    a.lit(500)
-    a.label('busy_wait')
+    # dec               # ( n -- n-1 )
+    a.label('dec')
     a.lit(1)
     a.sub()
-    a.dup()
-    a.branch0('go')
-    a.branch('busy_wait')
+    a.ret()
 
-    a.label('go')
-    a.drop()
-    a.lit(65)
-    a.io_store( _UART_TX_DATA_ADDR )
-    a.lit( 1 )
-    a.io_store( _UART_START_ADDR )
-    # loop waiting for the TX to finish
-    a.label( 'tx_wait_loop' )
-    a.io_fetch( _UART_TX_BUSY_ADDR )
+    # wait              # ( -- )
+    a.label('wait')
+    a.lit(500)          # ( n )
+    a.label('waitloop')
+    a.call('dec')       # ( n-1 )
+    a.dup()             # ( n-1 n-1 )
+    a.branch0('leave')  # ( n-1 )
+    a.branch('waitloop')
+    a.label('leave')
+    a.drop()            # ( --)
+    a.ret()
+
+    # tx_byte           ( n -- )
+    a.label('tx_byte')
+    a.io_store(_UART_TX_DATA_ADDR)
+    a.lit(1)
+    a.io_store(_UART_START_ADDR)
+    a.label('_1')
+    a.io_fetch(_UART_TX_BUSY_ADDR)
     a.lit(0)
     a.equal()
-    a.branch0( 'tx_wait_loop' )
+    a.branch0('_1')
+    a.ret()
+
+    ## loops
+    
+    # main loop
+
+    # TX a byte and wait for it to finish
+    a.label('loop')
+    a.call('wait')
+    a.lit(65)
+    a.call('tx_byte')
     a.branch('loop')
 
     return a
@@ -320,8 +374,6 @@ def gpio_test():
     return a    
 
 def looper():
-
-        
     a = Assembler()
     a.resw( 'count', 0x3ff, 10 )
     a.nop()
@@ -330,7 +382,7 @@ def looper():
     a.label( 'loop' )       
     a.fetch( 'count' )      # load count from memory   ( -- n )
 
-    a.call( 'sub1&out' )    # call sub1&out ( -- n-1 )
+    a.call( 'sub1&out' )    # call sub1&out ( n -- n-1 )
 
     a.dup()                 # ( -- n-1 n-1 )
     a.store( 'count' )      # ( -- n-1 )

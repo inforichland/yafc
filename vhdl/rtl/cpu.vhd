@@ -181,7 +181,8 @@ begin
             g_data_width => 16,
             g_addr_width => 13,
             g_init       => true,
-            g_init_file  => "..\..\examples\uart_tx_test.init"
+            g_init_file  => "..\..\examples\uart_echo_test.init"
+            --g_init_file  => "..\..\examples\uart_tx_test.init"
             )
         port map (
             clk    => clk,
