@@ -126,7 +126,7 @@ begin
                 ----------
                 -- GPIO --
                 ----------
-                when "0000000010000" => io_read_i <= "000000000000000" & gpio_out_regs.output(0);
+                when "0000000010000" => io_read_i <= "00000000" & gpio_out_regs.output(7 downto 0);
 
                 -- Default value
                 when others => io_read_i <= (others => '0');

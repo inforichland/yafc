@@ -276,7 +276,7 @@ begin
                                 dnos_sel <= "10";
                                 dpop     <= '1';
                                 
-                            when f_ioo =>  -- io! ( n a -- ) [assembler MUST insert a drop after this]
+                            when f_ioo =>  -- io! ( n a -- ) [assembler MUST (well, should probably) insert a drop after this]
                                 io_write <= dnos;
                                 io_we    <= '1';
                                 pop_dstack;
@@ -286,6 +286,18 @@ begin
                                 io_re    <= '1';
                                 dtos_sel <= "11";
                                 dtos_in  <= io_read;
+                            
+                            when f_or =>    -- or ( a b -- a|b)
+                                dtos_in  <= alu_results.or_result;
+                                dtos_sel <= "11";
+                                dnos_sel <= "10";
+                                dpop     <= '1';
+                            
+                            when f_and =>   -- and ( a b -- a&b)
+                                dtos_in  <= alu_results.and_result;
+                                dtos_sel <= "11";
+                                dnos_sel <= "10";
+                                dpop     <= '1';
                                 
                             when others =>  -- NOP
                                 null;

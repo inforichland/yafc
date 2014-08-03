@@ -22,7 +22,7 @@ package opcodes is
   constant f_nop : fcode := "00000";    -- NOP
   constant f_add : fcode := "00001";       -- +
   constant f_sub : fcode := "00010";       -- -
---  constant f_out : fcode := "00011";       -- output port
+--  constant AVAILABLE : fcode := "00011";
   constant f_sla : fcode := "00100";       -- 2* (arithmetic)
   constant f_sra : fcode := "00101";       -- 2/ (arithmetic)
   constant f_dup : fcode := "00110";       -- dup
@@ -39,11 +39,16 @@ package opcodes is
   constant f_tck : fcode := "10001";		  -- tuck
   constant f_ovr : fcode := "10010";		  -- over
   constant f_equ : fcode := "10011";      -- equals (=)
+  
   -- I/O bus
   constant f_ioo : fcode := "10100";      -- IO!
   constant f_ioi : fcode := "10101";      -- IO@
+  
+  -- stuff I haven't needed yet, but I'm too lazy to reorganize these right now :-)
+  constant f_or  : fcode := "10110";      -- or
+  constant f_and : fcode := "10111";      -- and
 
-  -- Subcodes (single bit mask in an instruction word)
+  -- Subcodes (single bit in an instruction word - function master codes)
   constant s_ret : integer range 0 to word'length := 7;
 
 end opcodes;

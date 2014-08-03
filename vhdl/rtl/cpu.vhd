@@ -161,7 +161,8 @@ begin
     prog_cntr : entity work.up_counter(rtl)
         generic map (
             g_width       => c_address_width,
-            g_reset_value => "0000000000000"
+            g_reset_value => "1111010110111"        -- 0x1EB7 (for bootloader)
+            --g_reset_value => "0000000000000"
             )
         port map (
             clk   => clk,
@@ -181,8 +182,7 @@ begin
             g_data_width => 16,
             g_addr_width => 13,
             g_init       => true,
-            g_init_file  => "..\..\examples\uart_echo_test.init"
-            --g_init_file  => "..\..\examples\uart_tx_test.init"
+            g_init_file  => "..\..\examples\bootloader.init"
             )
         port map (
             clk    => clk,

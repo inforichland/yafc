@@ -1,10 +1,12 @@
+import serial
+
 class Assembler( object ):
     _BR_  = '001'
     _0BR_ = '010'
     _CAL_ = '011'
     _ADD_ = '000' + '00001' + '00000000'
     _SUB_ = '000' + '00010' + '00000000'
-#    _OUT_ = '000' + '00011' + '00000000'
+#AVAILABLE = '000' + '00011' + '00000000'
     _SLA_ = '000' + '00100' + '00000000'
     _SRA_ = '000' + '00101' + '00000000'
     _DUP_ = '000' + '00110' + '00000000'
@@ -23,6 +25,8 @@ class Assembler( object ):
     _EQU_ = '000' + '10011' + '00000000'
     _IOO_ = '000' + '10100' + '00000000'
     _IOI_ = '000' + '10101' + '00000000'
+    _OR_  = '000' + '10110' + '00000000'
+    _AND_ = '000' + '10111' + '00000000'
     _NOP_ = '0'*16
 
     _RET_MASK_ = 16-1 - 7
@@ -52,6 +56,9 @@ class Assembler( object ):
         self.labels[ name ] = self.instr
         self.labels_inv[ self.instr ] = name
 
+    def org( self, addr ):
+        self.instr = addr
+
     def lit( self, l ):
         assert l <= (2**15) and l >= -(2**15)+1
         tmp = bin(l)[2:]
@@ -72,6 +79,9 @@ class Assembler( object ):
 
     def branch( self, lbl ):
         self.code_append( Assembler._BR_ + lbl )
+
+    def branch_abs( self, addr ):
+        self.code_append( Assembler._BR_ + self._addr2bin( addr ) )
     
     def sla( self ):
         self.code_append( Assembler._SLA_ )
@@ -96,9 +106,16 @@ class Assembler( object ):
         self.lit( addr )
         self.code_append( Assembler._FTC_ )
 
+    def store_abs( self, addr ):
+        self.lit( addr )
+        self.code_append( Assembler._STR_ )
+        self.code_append( Assembler._DRP_ )
+
     def store( self, name ):
         addr = self._findname( name )
-        self.lit( addr )
+        self.store_abs( addr )
+
+    def store_stack( self ):
         self.code_append( Assembler._STR_ )
         self.code_append( Assembler._DRP_ )
 
@@ -150,39 +167,57 @@ class Assembler( object ):
     def io_fetch( self, addr ): # I/O input
         self.lit( addr )
         self.code_append( Assembler._IOI_ )
+
+    def or_( self ):
+        self.code_append( Assembler._OR_ )
+
+    def and_( self ):
+        self.code_append( Assembler._AND_ )
     
-    def full_code( self ):
+    def full_code( self, entry_addr=0 ):
         l = len( self.code )
         fcode = []
 
+        # pad with NOPs until we reach the entry point
+        fcode= [Assembler._NOP_ for i in range(2**self.addr_width)]
+
         jumpin_major_codes = [Assembler._CAL_, Assembler._0BR_, Assembler._BR_]
+
+        print 'ENTRY ADDR', entry_addr
 
         # first pass through, match up labels with addresses and emit first pass of code
         for i, c in enumerate( self.code ):
+            j = i + entry_addr
             f = c[ :3 ]
             if self.labels_inv.has_key( i ) and f in jumpin_major_codes:
                 label = self.labels_inv[ i ]
                 self.labels[ label ] = i
-                fcode.append( self.code[ i ] )
+                #fcode.append( self.code[ i ] )
+                fcode[j] =  self.code[i]
             else:
-                fcode.append( self.code[ i ] )
+                #fcode.append( self.code[ i ] )
+                fcode[j] = self.code[i]
 
         # patch up code with addresses, pad out to full length
         #   and insert data
-        for i in xrange( 1, 2**self.addr_width ):
-            if i < l and fcode[ i ][ :3 ] in jumpin_major_codes:
-                label = self.labels[ fcode[ i ][ 3: ] ]
-                label1 = bin( label )[ 2: ].rjust( 13, '0' )
-                fcode[ i ] = fcode[ i ][ :3 ] + label1
-                print fcode[ i ][ :3 ], label1, i, label
+        for i in range(len(fcode)):
+            f=fcode[i]
+            if f[:3] in jumpin_major_codes:
+                tmp = f[3:]
+                if not all(map(lambda a: a=='0' or a=='1', tmp)): # just a regular address or a label?
+                    label = self.labels[ f[3:] ]
+                    label1 = bin( label )[ 2: ].rjust( 13, '0' )
+                    fcode[ i ] = fcode[ i ][ :3 ] + label1
+                    #fcode.append( f[ :3 ] + label1 )
+                    print f[ :3 ], label1, i, label
+                    
             elif self.words.has_key( i ):
                 word = bin( self.words[ i ][ 1 ] )[ 2: ].rjust( 16, '0' )
-                fcode.append( word )
-            elif i >= l:
-                fcode.append( Assembler._NOP_ )
+                fcode[i]=word
+                #fcode.append( word )
         return fcode
 
-    def write_code_file( self, filename, is_mif=False ):
+    def write_code_file( self, filename, entry_addr=0x0000, is_mif=False ):
         with open( filename, 'w' ) as f:
             if is_mif:
                 print >>f, 'DEPTH = 8192;'
@@ -191,7 +226,7 @@ class Assembler( object ):
                 print >>f, 'DATA_RADIX=BIN;'
                 print >>f, 'CONTENT'
                 print >>f, 'BEGIN'
-            for i, val in enumerate(self.full_code()):
+            for i, val in enumerate(self.full_code( entry_addr=entry_addr )):
                 if is_mif:
                     print >>f, i, ' : ', val, ';'
                 else:
@@ -208,6 +243,96 @@ _UART_TX_DATA_ADDR = 1      # write
 _UART_RX_BUSY_ADDR = 0      # read
 _UART_TX_BUSY_ADDR = 1      # read
 _UART_RX_DATA_ADDR = 2      # read
+
+# 0x1eb5 - 0x1fff (512 words, minus two for globals)
+BOOTLOADER_ENTRY_ADDR=0x1eb7
+def bootloader():
+    a=Assembler()
+    
+    ## global variables ##
+    a.resw( 'size', 0x1eb5, 0 )     # size of program to load
+    a.resw( 'index', 0x1b6, 0 )     # index into memory we're writing to
+
+    # obligatory NOP as first word
+    a.org( 0x1eb7 )
+    a.nop()    
+    a.branch('boot')
+    
+    # words
+
+    # Receive a byte   ( -- n )
+    a.label('rx_byte')              
+    a.io_fetch(_UART_RX_BUSY_ADDR) # wait for RX Busy to go high
+    a.lit(1)
+    a.equal()
+    a.branch0('rx_byte')
+    
+    a.label('_1')
+    a.io_fetch(_UART_RX_BUSY_ADDR) # wait for RX busy to go low
+    a.lit(0)
+    a.equal()
+    a.branch0('_1')
+    a.io_fetch(_UART_RX_DATA_ADDR)
+    a.ret()
+
+    # receive a 16-bit word     ( -- n )
+    a.label('rx_word')
+    a.call('rx_byte')
+    a.lit(8)
+    a.sla()
+    a.call('rx_byte')
+    a.or_()
+    a.ret()
+
+    # increment ( n -- n+1)
+    a.label('inc')
+    a.lit(1)
+    a.add()
+    a.ret()
+    
+    # main entry point
+    a.label('boot')
+
+    # get the size of the program to load (in 16-bit words)
+    a.call('rx_byte')   # wait for a byte
+    a.lit(8)            # ...
+    a.sla()             # shift left 8 (see above) bits
+    a.call('rx_byte')   # wait for another byte
+    a.or_()             # or the two bytes together to make a word (little endian)
+    a.store('size')     # store in global variable for safekeeping
+    
+    # multiply size of program by 2 to get size in bytes
+    a.fetch('size')
+    a.lit(1)            # 
+    a.sla()             # shift left by 1 bit (multiply by 2)
+
+    # set index into memory to 0
+    a.lit(0)
+    a.store('index')    # reset index to 0 just to be sure
+
+    # this is the main receive loop of the program
+    a.label('rx_loop')
+    # is index = size ?
+    a.fetch('index')
+    a.fetch('size')
+    a.equal()
+    a.not_()
+    a.branch0('jump_to_program') # if we're done, start the program!
+    
+    a.call('rx_word')   # receive a word
+    a.fetch( 'index' )
+    a.store_stack()     # store the word in memory
+    a.fetch( 'index' )  # increment index
+    a.call('inc')
+    a.store( 'index' )
+    a.branch( 'rx_loop' ) # get the next word
+
+    # jump to the loaded program
+    a.label('jump_to_program')
+    a.branch_abs(0)
+
+    return a
+
 
 def uart_echo_test():
     a=Assembler()
@@ -420,3 +545,24 @@ def looper():
     a.branch( 'hang' )
             
     return a
+
+#################################
+## the host bootloader program ##
+#################################
+def bootload(port,speed,init_file):
+    ser=serial.Serial(port,speed)
+    try:
+        lines = map(lambda a: a.strip(), open(init_file).readlines())
+        word_count = len(lines)
+        print 'words: ', word_count
+        h, l = ( word_count-255 if word_count-255 > 0 else 0, word_count % 255 )
+        print 'size: ', h, l
+        # write the word count to the device
+        ser.write([h,l])
+        for line in lines:
+            h, l = int(line[:8],2), int(line[8:],2)
+            print h, l
+            # write the word to the device
+            ser.write([h, l])
+    finally:
+        ser.close()

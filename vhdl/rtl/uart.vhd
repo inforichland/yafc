@@ -70,7 +70,7 @@ begin
         end if;
     end process regs_proc;
 
-    -- comnbinational logic for 'busy' signals
+    -- combinational logic for 'busy' signals
 	tx_busy_i <= '1' when( strobe = '1' or tx_bitcount /= 10 ) else '0';
 	rx_busy_i <= '1' when( rx_bitcount /= 9 ) else '0';
 
@@ -96,6 +96,7 @@ begin
 		end if ;
 	end process TX_PROC ;
 
+    -- RX process
 	RX_PROC : process( clk )
 	begin
 		if rising_edge( clk ) then
@@ -103,12 +104,14 @@ begin
 			if( rx_bitcount /= 9 ) then
 				if( rx_divider /= DIVIDER ) then
 					rx_divider <= rx_divider + 1;
+                -- ensure 4 of the same sample in a row
 				elsif( sample_sr = "1111" or sample_sr = "0000" ) then
 					rx_divider <= 0;
 					rx_bitcount <= rx_bitcount + 1;
 					rx_sr <= sample_sr( 3 ) & rx_sr( 7 downto 1 );
 				end if ;
 			else
+                -- TODO: try 'if(sample_sr="1100") then' for some slight deglitching
 				if( sample_sr( 3 downto 2 ) = "10" ) then -- start bit
 					-- starting the count at halfway through a bit period
 					-- will align the sampling to the middle of the bit period

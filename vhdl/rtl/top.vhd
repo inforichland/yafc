@@ -54,24 +54,7 @@ architecture rtl of top is
     signal gpio_out : word;
 begin
 
-    -- purpose: initialize the chip with a small forced reset
-    -- type   : sequential
-    -- inputs : clk
-    -- outputs: rst_n
---    init_reset : process (clk0) is
---    begin  -- process init_reset
---        if rising_edge(clk0) then       -- rising clock edge
---            if rst_cntr = 0 then
---                rst_n <= '1';
---            else
---                rst_cntr <= rst_cntr - 1;
---                rst_n    <= '0';
---            end if;
---        end if;
---    end process init_reset;
-
-    --rst <= not rst_n;
-
+    -- Instantiate the PLL (32MHz in, 100MHz out)
     inst_pll : pll
         port map (
             clk_in1  => clk,
@@ -79,9 +62,9 @@ begin
             reset    => '0',
             locked   => open);
 
+    -- hook up GPIO pins
     gpio_in( 7 downto 0 ) <= switch;
     gpio_in( word'high downto 8 ) <= ( others => '0' );
-
     led <= gpio_out( 7 downto 0 );
     
     -- Instantiate the CPU

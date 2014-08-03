@@ -50,6 +50,8 @@ package common is
     sll_result : word;
     srl_result : word;
     eq_result  : word;
+    or_result  : word;
+    and_result : word;
   end record;
 
 end common;

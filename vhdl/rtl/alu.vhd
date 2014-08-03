@@ -38,6 +38,9 @@ begin
       alu_results.srl_result <= std_logic_vector( shift_right( signed( nos ), to_integer( signed( tos ) ) ) );
     end if;
     
+    alu_results.or_result   <= nos or tos;
+    alu_results.and_result  <= nos and tos;
+    
     -- relational
     if tos = nos then
       alu_results.eq_result <= ( others => '1' );
