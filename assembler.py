@@ -1,3 +1,9 @@
+# NOTE: sorry this file is pretty much a giant hack :-(
+# even the simplest of optimizations is not yet implemented
+# and the style is all over the place.
+
+# TODO: peephole for 'return' bits that can be added to the previous opcode.
+
 import serial
 
 class Assembler( object ):
@@ -179,7 +185,7 @@ class Assembler( object ):
         fcode = []
 
         # pad with NOPs until we reach the entry point
-        fcode= [Assembler._NOP_ for i in range(2**self.addr_width)]
+        fcode = [Assembler._NOP_ for i in range(2**self.addr_width)]
 
         jumpin_major_codes = [Assembler._CAL_, Assembler._0BR_, Assembler._BR_]
 
