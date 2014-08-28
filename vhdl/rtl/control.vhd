@@ -17,6 +17,7 @@ use ieee.numeric_std.all;
 
 use work.common.all;
 use work.opcodes.all;
+use work.registers_pkg.all;
 
 entity control is
   port (
@@ -85,7 +86,7 @@ begin
     elsif rising_edge(clk) then
       stall <= stall_i;
     end if;
-  end process regs;
+  end process stall_proc;
 
   -- latch for IRQ number
   irq_latch : process (clk, rst_n)
@@ -122,8 +123,8 @@ begin
     rpush     <= '0';
     rpop      <= '0';
     rtos_sel  <= '0';
-    rtos_in   <= rtos;                  -- this feedback is necessary to store
-                                        -- the value
+    rtos_in   <= rtos;                  -- this feedback is necessary to keep
+                                        -- the old value as a default
     pc_inc    <= '1';
     pc_load   <= '0';
     pc_next   <= (others => '0');
@@ -140,12 +141,16 @@ begin
     mcode := insn(14 downto 13);
     fcode := insn(12 downto 8);
 
-    -- TODO: is an interrupt pending?
-    
-    -- stalling or executing?
-    if stall = '1' then
-      stall_i <= '0';  -- only ever need one cycle of stalling right now
-    else
+    if or_vector(irqs_latch) = '1' then -- is an interrupt pending?
+      pc_next <= c_irq_vector_addr;
+      pc_load <= '1';
+      rtos_in <= "000" & pc;
+      rpush   <= '1';
+      stall_i <= '1';
+    elsif stall = '1' then              -- stalling?
+      stall_i <= '0';
+      null;
+    else                                -- or executing?
       -- decode the instruction
       if insn(insn'high) = '1' then     -- literal
         dtos_in  <= insn(insn'high-1) & insn(insn'high-1 downto 0);  -- sign-extend the literal by 1 bit
@@ -295,21 +300,21 @@ begin
                 io_addr  <= dtos(c_address_width-1 downto 0);
                 io_re    <= '1';
                 dtos_sel <= "11";
-                dtos_in  <= io_read; 
+                dtos_in  <= io_read;
                 
               when f_or =>  -- or ( a b -- a|b)
                 dtos_in  <= alu_results.or_result;
                 dtos_sel <= "11";
                 dnos_sel <= "10";
-                dpop     <= '1'; 
+                dpop     <= '1';
                 
               when f_and =>  -- and ( a b -- a&b)
                 dtos_in  <= alu_results.and_result;
                 dtos_sel <= "11";
                 dnos_sel <= "10";
-                dpop     <= '1'; 
+                dpop     <= '1';
                 
-              when others =>  -- NOP
+              when others =>            -- NOP
                 null;
                 
             end case;  -- case( fcode )

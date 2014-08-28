@@ -17,6 +17,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use work.common.all;
 use work.uart_pkg.all;
 use work.gpio_pkg.all;
+use work.registers_pkg.all;
 
 entity peri_bus is
     port (
@@ -42,11 +43,16 @@ architecture Behavioral of peri_bus is
     signal uart_out_pins : uart_out_pins_t;
     signal uart_in_regs  : uart_in_regs_t;
     signal uart_out_regs : uart_out_regs_t;
+
     -- GPIO
     signal gpio_in_pins  : gpio_in_pins_t;
     signal gpio_out_pins : gpio_out_pins_t;
     signal gpio_in_regs  : gpio_in_regs_t;
     signal gpio_out_regs : gpio_out_regs_t;
+
+    -- Memory-mapped registers
+    signal regs_in : regs_t;
+    signal regs_out : regs_t;
 begin
 
     ---------------------------------------------------------------------------
@@ -55,6 +61,7 @@ begin
     -- out of the peripheral, and out and in to the bus.
     ---------------------------------------------------------------------------
 
+  
     ---------------------------------------------------------------------------
     -- Assign inputs & outputs
     ---------------------------------------------------------------------------
@@ -64,10 +71,21 @@ begin
     pins_out.gpio_out_pins <= gpio_out_pins;
     io_read                <= io_read_i;
 
-    -------------------------------------------------------------------------------
-    -- UART
-    -------------------------------------------------------------------------------
+    ---------------------------------------------------------------------------
+    -- Memory-mapped registers
+    ---------------------------------------------------------------------------
+    inst_registers : entity work.registers(rtl)
+      port map (
+        clk      => clk,
+        rst_n    => rst_n,
+        regs_in  => regs_in,
+        regs_out => regs_out);
+      
 
+    
+    ---------------------------------------------------------------------------
+    -- UART
+    ---------------------------------------------------------------------------
     inst_uart : entity work.uart(Behavioral)
         generic map (
             CLOCK_FREQ => 100000000,
@@ -87,7 +105,7 @@ begin
     inst_gpio : entity work.gpio(rtl)
         port map (
             clk      => clk,
-            rsT_n    => rst_n,
+            rst_n    => rst_n,
             regs_in  => gpio_in_regs,
             regs_out => gpio_out_regs,
             pins_in  => gpio_in_pins,
@@ -120,6 +138,11 @@ begin
                 ----------
                 when "0000000010000" => io_read_i <= "00000000" & gpio_out_regs.output(7 downto 0);
 
+                -----------------------------
+                -- Memory-mapped registers --
+                -----------------------------
+                when "0000000100000" => io_read_i <= regs_out.irqs_latch_clear;
+                                        
                 -- Default value
                 when others => io_read_i <= (others => '0');
                                
@@ -152,6 +175,11 @@ begin
 
                     when "0000000010000" => gpio_in_regs.input <= io_write;
 
+                    ----------------------------- 
+                    -- Memory-mapped registers --    
+                    -----------------------------
+                    when "0000000100000" => regs_in.irqs_latch_clear <= io_write;
+                                            
                     -- Do nothing for other addresses
                     when others => null;
                                             
